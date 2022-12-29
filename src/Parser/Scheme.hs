@@ -14,9 +14,9 @@ import Text.ParserCombinators.Parsec
 extChar :: Parser Char
 extChar = oneOf "!$%&*+-./:<=>?@^_~"
 
--- Parse an inline hex escape (e.g. `\x65`).
+-- Parse an inline hex escape (e.g. `\x65;`).
 hexEsc :: Parser Char
-hexEsc = string "\\x" >> fmap chr hex
+hexEsc = between (string "\\x") (char ';') (fmap chr hex)
 
 -- Parse a Scheme identifier in short form.
 parseId' :: Parser Sexp
@@ -26,11 +26,11 @@ parseId' = fmap Id $ many1 (letter <|> digit <|> extChar)
 --
 -- TODO: || is differnet from any other identifier
 parseId'' :: Parser Sexp
-parseId'' = fmap Id $ between (char '|') (char '|') (many $ noneOf "\\|")
+parseId'' = fmap Id $ between (char '|') (char '|') (many $ hexEsc <|> noneOf "\\|")
 
 -- Parse a Scheme identifier.
 parseId :: Parser Sexp
-parseId = parseId' <|> parseId''
+parseId = parseId'' <|> parseId'
 
 -- Parse a Scheme symbol literal.
 parseSymbol :: Parser Sexp
