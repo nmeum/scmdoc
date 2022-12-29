@@ -18,24 +18,30 @@ extChar = oneOf "!$%&*+-./:<=>?@^_~"
 hexEsc :: Parser Char
 hexEsc = string "\\x" >> fmap chr hex
 
--- Parse a Scheme identifier.
-parseId :: Parser Sexp
-parseId = fmap Atom $ many1 (letter <|> digit <|> extChar)
+-- Parse a Scheme identifier in short form.
+parseId' :: Parser Sexp
+parseId' = fmap Id $ many1 (letter <|> digit <|> extChar)
 
 -- Parse a Scheme identifier enclosed by ||.
 --
 -- TODO: || is differnet from any other identifier
-parseId' :: Parser Sexp
-parseId' = fmap Atom $ between (char '|') (char '|') (many $ noneOf "\\|")
+parseId'' :: Parser Sexp
+parseId'' = fmap Id $ between (char '|') (char '|') (many $ noneOf "\\|")
+
+-- Parse a Scheme identifier.
+parseId :: Parser Sexp
+parseId = parseId' <|> parseId''
+
+-- Parse a Scheme symbol literal.
+parseSymbol :: Parser Sexp
+parseSymbol = char '\'' >> parseId
 
 ------------------------------------------------------------------------
-
-parseAtom :: Parser Sexp
-parseAtom = parseId <|> parseId'
 
 parseList :: Parser Sexp
 parseList = fmap List $ sepBy parseSexp spaces1
 
 parseSexp :: Parser Sexp
-parseSexp = parseAtom
+parseSexp = parseId
+        <|> parseSymbol
         <|> between (char '(') (char ')') parseList

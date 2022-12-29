@@ -1,8 +1,8 @@
 module Types where
 
-data Sexp = Atom     String
-          | Str      String
-          | Symbol   String
-          | List     [Sexp]
-          | ConsList [Sexp]
+data Sexp = Str      String -- "foo"
+          | Id       String -- foo
+          | Symbol   String -- 'foo
+          | List     [Sexp] -- ["foo" "bar"]
+          | ConsList [Sexp] -- ("foo" . bar)
     deriving (Show, Eq)
