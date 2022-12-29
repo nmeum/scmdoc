@@ -1,4 +1,12 @@
-module Main (main) where
+import Test.Tasty
+
+import SchemeParser
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented."
+main = defaultMain tests
+
+tests :: TestTree
+tests = testGroup "Tests"
+  [
+    schemeParser
+  ]
