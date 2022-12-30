@@ -4,15 +4,30 @@ import Types
 import Parser.Util
 
 import Data.Char
-import Text.ParserCombinators.Parsec
+import Text.Parsec.Char (endOfLine)
+import Text.ParserCombinators.Parsec hiding (space)
 
--- Intraline whitespace.
+-- Intraline whitespace as defined in formal R⁷RS syntax.
 intraSpace :: Parser Char
 intraSpace = char ' ' <|> char '\t'
 
 -- Zero or more intraline whitespaces.
 intraSpaces :: Parser ()
 intraSpaces = skipMany intraSpace
+
+-- Whitespace as defined in formal R⁷RS syntax.
+space :: Parser Char
+space = intraSpace <|> endOfLine <|> char '\r'
+
+-- Zero or more whitespaces.
+spaces :: Parser ()
+spaces = skipMany space
+
+-- One or more whitespaces.
+spaces1 :: Parser()
+spaces1 = skipMany1 space
+
+------------------------------------------------------------------------
 
 -- Extended identifier characters according to R⁷RS Scheme.
 --

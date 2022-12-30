@@ -3,10 +3,6 @@ module Parser.Util where
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
 
--- Like spaces from Parsec but matches one or more spaces.
-spaces1 :: Parser ()
-spaces1 = skipMany1 space
-
 -- Parse a hexadecimal number without a prefix.
 hex :: Parser Int
 hex = fmap readHex' hexDigits
