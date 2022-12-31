@@ -6,7 +6,7 @@ import Parser.Util
 import Data.Char
 import Text.Parsec.Char (endOfLine)
 
-import Text.ParserCombinators.Parsec hiding (space, string)
+import Text.ParserCombinators.Parsec hiding (space, spaces, string)
 import qualified Text.ParserCombinators.Parsec as P
 
 -- Intraline whitespace.
@@ -190,20 +190,17 @@ string = fmap Str $
 number :: Parser Sexp
 number = fmap (Number . read) $ many1 digit
 
--- TODO: Implement this as a lexme tokenizer / delimiter parser.
 list :: Parser Sexp
-list = fmap List $ sepBy parseSexp spaces1
+list = fmap List $ many parseSexp
 
--- TODO: Support for comments
--- TODO: Lexing, i.e. parse `(define x 1) (define y 2)`
-parseSexp :: Parser Sexp
-parseSexp = identifier
+parseSexp' :: Parser Sexp
+parseSexp' = identifier
         <|> character
         <|> boolean
         <|> number
         <|> string
-        <|> between (char '(') (char ')') list
-        -- TODO: Treat vector and bytevector as list for now
+        <|> (between (char '(') (char ')') list)
+        -- XXX: Treat vector and bytevector as list for now
         <|> between (P.string "#(") (P.char ')') list
         <|> between (P.string "#u8(") (P.char ')') list
         -- TODO
@@ -212,6 +209,15 @@ parseSexp = identifier
         <|> (char '`'  >> parseSexp)
         <|> (char ','  >> parseSexp)
         -- TODO: Dotted pairs and dotted lists
+        -- TODO: Support for comments
+
+parseSexp :: Parser Sexp
+parseSexp = lexeme parseSexp'
+    where
+        -- TODO: Comments are treated exactly like whitespace.
+        --  → Parse `(define x 1)#|foo|#(define y 2)`
+        lexeme :: Parser a -> Parser a
+        lexeme = between spaces spaces
 
 scheme :: Parser [Sexp]
 scheme = many parseSexp
