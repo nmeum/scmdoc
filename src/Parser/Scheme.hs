@@ -143,7 +143,29 @@ characterName = bind "alarm" '\a'
             <|> bind "space" ' '
             <|> bind "tab" '\t'
 
+-- Scheme block comment.
+--
+--  <nested comment> → #| <comment text>
+--                      <comment cont>* |#
+--
+-- XXX: Not sure if I understood the nested comment grammar rule correctly.
+nestedComment :: Parser String
+nestedComment = P.string "#|" >> manyTill anyChar (P.string "|#")
+
 ------------------------------------------------------------------------
+
+-- Source code comment.
+--
+--  <comment> → ; <all subsequent characters up to a
+--      line ending>
+--      | <nested comment>
+--      | #; <intertoken space> <datum>
+--
+comment :: Parser Sexp
+comment = fmap (Comment . unwords . words) $
+          (char ';' >> manyTill anyChar endOfLine)
+           <|> nestedComment
+      -- TODO: #; comments
 
 -- Scheme identifier or symbol.
 --
@@ -196,10 +218,11 @@ list = fmap List $ many parseSexp
 parseSexp' :: Parser Sexp
 parseSexp' = identifier
         <|> character
-        <|> boolean
+        <|> try boolean
         <|> number
         <|> string
         <|> (between (char '(') (char ')') list)
+        <|> comment
         -- XXX: Treat vector and bytevector as list for now
         <|> between (P.string "#(") (P.char ')') list
         <|> between (P.string "#u8(") (P.char ')') list
