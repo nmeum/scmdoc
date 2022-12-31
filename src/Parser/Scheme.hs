@@ -157,6 +157,15 @@ identifier = fmap Id $
         <|> between (char '|') (char '|') (many symbolElement)
         -- TODO: peculiar identifier
 
+-- Scheme boolean
+--
+--  <boolean> → #t | #f | #true | #false
+--
+boolean :: Parser Sexp
+boolean = char '#' >>
+         (fmap (const $ Boolean True)  (P.string "t" <|> P.string "true")
+      <|> fmap (const $ Boolean False) (P.string "f" <|> P.string "false"))
+
 -- Scheme character.
 --
 --  <character> → #\ <any character>
