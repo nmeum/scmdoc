@@ -5,7 +5,7 @@ import Test.Tasty.HUnit
 
 import Types
 import Parser.Scheme
-import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec hiding (string)
 
 parseErrors :: Parser a -> String -> String
 parseErrors p input =
@@ -23,35 +23,38 @@ schemeParser = testGroup "Tests for the Scheme parser"
 idParser :: TestTree
 idParser = testGroup "Identifier parser"
     [ testCase "Simple identifier" $ do
-        assertEqual "" (Right $ Id "foo") $ parse parseId "" "foo"
+        assertEqual "" (Right $ Id "foo") $ parse identifier "" "foo"
 
     , testCase "Identifier with extented identifier character" $ do
-        assertEqual "" (Right $ Id "f%o!!") $ parse parseId "" "f%o!!"
+        assertEqual "" (Right $ Id "f%o!!") $ parse identifier "" "f%o!!"
 
     , testCase "Identifier enclosed by vertical lines" $ do
-        assertEqual "" (Right $ Id "Hello") $ parse parseId "" "|Hello|"
+        assertEqual "" (Right $ Id "Hello") $ parse identifier "" "|Hello|"
 
     , testCase "Parse the empty identifier" $ do
-        assertEqual "" (Right $ Id "") $ parse parseId "" "||"
+        assertEqual "" (Right $ Id "") $ parse identifier "" "||"
 
     , testCase "Identifier with inline hex escape" $ do
-        assertEqual "" (Right $ Id "Hello") $ parse parseId "" "|H\\x65;llo|"
+        assertEqual "" (Right $ Id "Hello") $ parse identifier "" "|H\\x65;llo|"
 
     , testCase "Identifier with invalid initial" $ do
-        assertEqual "" "expecting \"|\" or letter" (parseErrors parseId "23foo")
+        assertEqual "" "expecting letter or \"|\"" (parseErrors identifier "23foo")
 
     , testCase "Identifier with mnemonic escape" $ do
-        assertEqual "" (Right $ Id "b\ar") $ parse parseId "" "|b\\ar|"
+        assertEqual "" (Right $ Id "b\ar") $ parse identifier "" "|b\\ar|"
     ]
 
 strParser :: TestTree
 strParser = testGroup "String parser"
     [ testCase "Simple string" $ do
-        assertEqual "" (Right $ Str "foobar") $ parse parseString "" "\"foobar\""
+        assertEqual "" (Right $ Str "foobar") $ parse string "" "\"foobar\""
 
     , testCase "Escaped quote" $ do
-        assertEqual "" (Right $ Str "foo\"bar") $ parse parseString "" "\"foo\\\"bar\""
+        assertEqual "" (Right $ Str "foo\"bar") $ parse string "" "\"foo\\\"bar\""
 
     , testCase "Escaped newline" $ do
-        assertEqual "" (Right $ Str "foobar") $ parse parseString "" "\"foo\\    \n   bar\""
+        assertEqual "" (Right $ Str "foobar") $ parse string "" "\"foo\\    \n   bar\""
+
+    , testCase "String with inline hex escape" $ do
+        assertEqual "" (Right $ Str "Hello") $ parse string "" "\"H\\x65;llo\""
     ]

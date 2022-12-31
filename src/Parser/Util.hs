@@ -13,8 +13,8 @@ hex = fmap readHex' hexDigits
         hexDigits = many1 (oneOf "0123456789abcdefABCDEF")
 
 -- Bind a given character to the given result.
-bind :: a -> Char -> Parser a
-bind val = fmap (\_ -> val) . char
+bind :: String -> a -> Parser a
+bind str val = const val <$> string str
 
 ------------------------------------------------------------------------
 
