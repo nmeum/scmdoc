@@ -186,11 +186,32 @@ string :: Parser Sexp
 string = fmap Str $
     between (char '"') (char '"') (filterJust <$> many stringElement)
 
--- TODO: Implement this as a lexme tokenizer / delimiter parser.
-parseList :: Parser Sexp
-parseList = fmap List $ sepBy parseSexp spaces1
+-- XXX: Dummy parser, add the real thing later.
+number :: Parser Sexp
+number = fmap (Number . read) $ many1 digit
 
+-- TODO: Implement this as a lexme tokenizer / delimiter parser.
+list :: Parser Sexp
+list = fmap List $ sepBy parseSexp spaces1
+
+-- TODO: Support for comments
+-- TODO: Lexing, i.e. parse `(define x 1) (define y 2)`
 parseSexp :: Parser Sexp
 parseSexp = identifier
+        <|> character
+        <|> boolean
+        <|> number
         <|> string
-        <|> between (char '(') (char ')') parseList
+        <|> between (char '(') (char ')') list
+        -- TODO: Treat vector and bytevector as list for now
+        <|> between (P.string "#(") (P.char ')') list
+        <|> between (P.string "#u8(") (P.char ')') list
+        -- TODO
+        <|> (char '\'' >> identifier)
+        <|> (char '`'  >> parseSexp)
+        <|> (char '`'  >> parseSexp)
+        <|> (char ','  >> parseSexp)
+        -- TODO: Dotted pairs and dotted lists
+
+scheme :: Parser [Sexp]
+scheme = many parseSexp
