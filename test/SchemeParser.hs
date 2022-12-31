@@ -18,7 +18,7 @@ parseErrors p input =
 
 schemeParser :: TestTree
 schemeParser = testGroup "Tests for the Scheme parser"
-    [ idParser, strParser ]
+    [ idParser, strParser, chrParser ]
 
 idParser :: TestTree
 idParser = testGroup "Identifier parser"
@@ -57,4 +57,16 @@ strParser = testGroup "String parser"
 
     , testCase "String with inline hex escape" $ do
         assertEqual "" (Right $ Str "Hello") $ parse string "" "\"H\\x65;llo\""
+    ]
+
+chrParser :: TestTree
+chrParser = testGroup "Character parser"
+    [ testCase "Simple character" $ do
+        assertEqual "" (Right $ Char 'f') $ parse character "" "#\\f"
+
+    , testCase "Character with character name" $ do
+        assertEqual "" (Right $ Char '\DEL') $ parse character "" "#\\delete"
+
+    , testCase "Character with hex escape" $ do
+        assertEqual "" (Right $ Char 'a') $ parse character "" "#\\x61"
     ]

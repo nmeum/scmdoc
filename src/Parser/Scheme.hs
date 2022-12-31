@@ -111,11 +111,11 @@ mnemonicEsc = bind "\\a" '\a' -- alarm
 -- Parse a character in a string, including escape sequences.
 -- Returns Nothing for escaped newlines.
 --
---  ⟨string element⟩ −→ ⟨any character other than " or \⟩
---      | ⟨mnemonic escape⟩ | \" | \\
---      | \⟨intraline whitespace⟩*⟨line ending⟩
---        ⟨intraline whitespace⟩*
---      | ⟨inline hex escape⟩
+--  <string element> → <any character other than " or \>
+--      | <mnemonic escape> | \" | \\
+--      | \<intraline whitespace>*<line ending>
+--        <intraline whitespace>*
+--      | <inline hex escape>
 --
 stringElement :: Parser (Maybe Char)
 stringElement = (fmap Just $ noneOf "\"\\")
@@ -126,6 +126,22 @@ stringElement = (fmap Just $ noneOf "\"\\")
             <|> (fmap Just inlineHexEsc)
 -- TODO: Add something along the lines of `choice-try` to clean this up.
 -- See the existing `choice` and `try` combinators provided by Parsec.
+
+-- Scheme character name.
+--
+--  <character name> → alarm | backspace | delete
+--      | escape | newline | null | return | space | tab
+--
+characterName :: Parser Char
+characterName = bind "alarm" '\a'
+            <|> bind "backspace" '\b'
+            <|> bind "delete" '\DEL'
+            <|> bind "escape" '\ESC'
+            <|> bind "newline" '\n'
+            <|> bind "null" '\0'
+            <|> bind "return" '\r'
+            <|> bind "space" ' '
+            <|> bind "tab" '\t'
 
 ------------------------------------------------------------------------
 
@@ -141,9 +157,21 @@ identifier = fmap Id $
         <|> between (char '|') (char '|') (many symbolElement)
         -- TODO: peculiar identifier
 
+-- Scheme character.
+--
+--  <character> → #\ <any character>
+--      | #\ <character name>
+--      | #\x<hex scalar value>
+--
+character :: Parser Sexp
+character = fmap Char $
+            (try $ P.string "#\\" >> characterName)
+        <|> (try $ P.string "#\\x" >> fmap chr hex)
+        <|> (try $ P.string "#\\" >> anyChar)
+
 -- A Scheme String.
 --
---  ⟨string⟩ −→ " ⟨string element⟩* "
+--  <string> → " <string element>* "
 --
 string :: Parser Sexp
 string = fmap Str $
