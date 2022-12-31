@@ -4,8 +4,8 @@ import Types
 import Parser.Util
 
 import Data.Char
-import Text.Parsec.Char (endOfLine)
 
+import Text.Parsec.Char (endOfLine)
 import Text.ParserCombinators.Parsec hiding (space, spaces, string)
 import qualified Text.ParserCombinators.Parsec as P
 
@@ -143,6 +143,14 @@ characterName = bind "alarm" '\a'
             <|> bind "space" ' '
             <|> bind "tab" '\t'
 
+-- Parse a Scheme delimiter.
+--
+--  <delimiter> → <whitespace> | <vertical line> | ( | ) | " | ;
+--
+-- Does not consume any input on failure.
+delimiter :: Parser ()
+delimiter = skip $ space <|> char '|' <|> char '(' <|> char ')' <|> char '"' <|> char ';'
+
 -- Scheme block comment.
 --
 --  <nested comment> → #| <comment text>
@@ -185,8 +193,8 @@ identifier = fmap Id $
 --
 boolean :: Parser Sexp
 boolean = char '#' >>
-         (fmap (const $ Boolean True)  (P.string "t" <|> P.string "true")
-      <|> fmap (const $ Boolean False) (P.string "f" <|> P.string "false"))
+         (fmap (const $ Boolean True)  ((try $ P.string "true") <|> P.string "t")
+      <|> fmap (const $ Boolean False) ((try $ P.string "false") <|> P.string "f"))
 
 -- Scheme character.
 --
@@ -218,10 +226,12 @@ list = fmap List $ many parseSexp
 parseSexp' :: Parser Sexp
 parseSexp' = identifier
         <|> character
-        <|> try boolean
         <|> number
         <|> string
         <|> (between (char '(') (char ')') list)
+        -- Boolean, comments, and {bit,}vectors all start with
+        -- a `#` character and thus require backtracking.
+        <|> try boolean
         <|> try comment
         -- XXX: Treat vector and bytevector as list for now
         <|> try (between (P.string "#(") (P.char ')') list)
@@ -229,17 +239,18 @@ parseSexp' = identifier
         -- TODO
         <|> (char '\'' >> parseSexp)
         <|> (char '`'  >> parseSexp)
-        <|> (char ','  >> parseSexp)
-        <|> (P.string ",@"  >> parseSexp)
+        <|> ((P.string ",@" <|> P.string ",") >> parseSexp)
         -- TODO: Dotted pairs and dotted lists
 
 parseSexp :: Parser Sexp
-parseSexp = lexeme parseSexp'
+parseSexp = terminatedBy (lexeme parseSexp') (lookAhead (delim <|> eof))
     where
-        -- TODO: Comments are treated exactly like whitespace.
-        --  → Parse `(define x 1)#|foo|#(define y 2)`
         lexeme :: Parser a -> Parser a
-        lexeme = between spaces spaces
+        lexeme p = spaces >> p
+
+        -- “Comments are treated exactly like whitespace.”
+        delim :: Parser ()
+        delim = (delimiter <|> (skip $ P.string "#|") <|> eof) <?> "delimiter"
 
 scheme :: Parser [Sexp]
 scheme = many parseSexp

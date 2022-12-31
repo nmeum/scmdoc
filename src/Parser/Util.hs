@@ -16,6 +16,17 @@ hex = fmap readHex' hexDigits
 bind :: String -> a -> Parser a
 bind str val = const val <$> string str
 
+-- Like skipMany but without the many part.
+skip :: Parser a -> Parser ()
+skip = fmap (const ())
+
+-- Runs both parsers and returns the result of the first.
+terminatedBy :: Parser a -> Parser b -> Parser a
+terminatedBy p1 p2 = do
+    r <- p1
+    _ <- p2
+    return r
+
 ------------------------------------------------------------------------
 
 filterJust :: [Maybe a] -> [a]
