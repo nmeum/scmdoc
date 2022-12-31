@@ -7,6 +7,15 @@ import Types
 import Parser.Scheme
 import Text.ParserCombinators.Parsec
 
+parseErrors :: Parser a -> String -> String
+parseErrors p input =
+    case parse p "" input of
+        Left err ->
+            last $ lines $ show err
+        Right _  -> ""
+
+------------------------------------------------------------------------
+
 schemeParser :: TestTree
 schemeParser = testGroup "Tests for the Scheme parser"
     [ idParser, strParser ]
@@ -27,6 +36,12 @@ idParser = testGroup "Identifier parser"
 
     , testCase "Identifier with inline hex escape" $ do
         assertEqual "" (Right $ Id "Hello") $ parse parseId "" "|H\\x65;llo|"
+
+    , testCase "Identifier with invalid initial" $ do
+        assertEqual "" "expecting \"|\" or letter" (parseErrors parseId "23foo")
+
+    , testCase "Identifier with mnemonic escape" $ do
+        assertEqual "" (Right $ Id "b\ar") $ parse parseId "" "|b\\ar|"
     ]
 
 strParser :: TestTree

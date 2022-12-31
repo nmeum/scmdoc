@@ -8,6 +8,7 @@ hex :: Parser Int
 hex = fmap readHex' hexDigits
     where
         -- Due to hexDigits, readHex should always read the full string.
+        -- XXX: Technically R⁷RS does not allow upper case hex letters.
         readHex'  = fst . head . readHex
         hexDigits = many1 (oneOf "0123456789abcdefABCDEF")
 
