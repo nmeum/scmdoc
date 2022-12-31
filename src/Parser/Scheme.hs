@@ -222,17 +222,16 @@ parseSexp' = identifier
         <|> number
         <|> string
         <|> (between (char '(') (char ')') list)
-        <|> comment
+        <|> try comment
         -- XXX: Treat vector and bytevector as list for now
-        <|> between (P.string "#(") (P.char ')') list
+        <|> try (between (P.string "#(") (P.char ')') list)
         <|> between (P.string "#u8(") (P.char ')') list
         -- TODO
-        <|> (char '\'' >> identifier)
-        <|> (char '`'  >> parseSexp)
+        <|> (char '\'' >> parseSexp)
         <|> (char '`'  >> parseSexp)
         <|> (char ','  >> parseSexp)
+        <|> (P.string ",@"  >> parseSexp)
         -- TODO: Dotted pairs and dotted lists
-        -- TODO: Support for comments
 
 parseSexp :: Parser Sexp
 parseSexp = lexeme parseSexp'
