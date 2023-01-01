@@ -13,10 +13,10 @@ instance Show LibraryName where
 
 mkLibName :: Sexp -> Either SyntaxError LibraryName
 mkLibName (List exprs) = MkLibName <$>
-    foldr (\x acc -> case x of
-        Id  ident -> ((:) ident) <$> acc
-        Number n  -> ((:) (show n :: String)) <$> acc
-        e         -> makeErr e "expected identifier or uinteger") (Right []) exprs
+    mapM (\x -> case x of
+        Id  ident -> Right $ ident
+        Number n  -> Right $ (show n :: String)
+        e         -> makeErr e "expected identifier or uinteger") exprs
 mkLibName e = makeErr e "expected non-empty list"
 
 ------------------------------------------------------------------------
