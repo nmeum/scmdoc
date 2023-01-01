@@ -57,20 +57,20 @@ findExport [] = Right []
 ------------------------------------------------------------------------
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
-data Library = MkLibrary { name :: LibraryName
+data Library = MkLibrary { name    :: LibraryName
                          , exports :: [ExportSpec]
-                         , body :: [Sexp] }
+                         , body    :: [Sexp] }
     deriving (Show)
 
 -- Check if the given s-expression constitutes an R⁷RS library declaration.
 findLibrary' :: Sexp -> Either SyntaxError Library
 findLibrary' (List ((Id "define-library"):libraryName:xs)) = do
     libraryName' <- case mkLibName libraryName of
-        Right n -> pure n
+        Right n  -> pure n
         Left err -> Left err
 
     exportSpec <- case findExport xs of
-        Right e -> pure e
+        Right e  -> pure e
         Left err -> Left err
 
     pure $ MkLibrary libraryName' exportSpec xs
@@ -94,7 +94,7 @@ includeFile fileName = do
     r <- parseFromFile scheme fileName
     case r of
         Left err -> throwIO $ ErrParser err
-        Right s -> pure s
+        Right s  -> pure s
 
 -- Expand an include into a begin expression.
 --
