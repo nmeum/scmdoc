@@ -1,4 +1,4 @@
-module SchemeDoc.Parser.R7RS where
+module SchemeDoc.Parser.R7RS (scheme) where
 
 import SchemeDoc
 import SchemeDoc.Parser.Util
@@ -34,10 +34,6 @@ space = intraSpace <|> endOfLine <|> char '\r'
 -- Zero or more whitespaces.
 spaces :: Parser ()
 spaces = skipMany space
-
--- One or more whitespaces.
-spaces1 :: Parser()
-spaces1 = skipMany1 space
 
 ------------------------------------------------------------------------
 
@@ -221,10 +217,18 @@ number :: Parser Sexp
 number = fmap (Number . read) $ many1 digit
 
 list :: Parser Sexp
-list = fmap List $ many parseSexp
+list = fmap List $ many sexp
 
-parseSexp' :: Parser Sexp
-parseSexp' = identifier
+-- Parse an S-Expression without lexing or delimiter handling
+-- according to the tokens defined in the R⁷RS formal syntax:
+--
+--  <token> → <identifier> | <boolean> | <number>
+--      | <character> | <string>
+--      | ( | ) | #( | #u8( | ’ | ` | , | ,@ | .
+--      <delimiter> → <whitespace> | <vertical line>
+--
+sexp' :: Parser Sexp
+sexp' = identifier
         <|> character
         <|> number
         <|> string
@@ -236,14 +240,15 @@ parseSexp' = identifier
         -- XXX: Treat vector and bytevector as list for now
         <|> try (between (P.string "#(") (P.char ')') list)
         <|> between (P.string "#u8(") (P.char ')') list
-        -- TODO
-        <|> (char '\'' >> parseSexp)
-        <|> (char '`'  >> parseSexp)
-        <|> ((P.string ",@" <|> P.string ",") >> parseSexp)
+        -- XXX: Quotation tokens are ignored for now
+        <|> (char '\'' >> sexp)
+        <|> (char '`'  >> sexp)
+        <|> ((P.string ",@" <|> P.string ",") >> sexp)
         -- TODO: Dotted pairs and dotted lists
 
-parseSexp :: Parser Sexp
-parseSexp = terminatedBy (lexeme parseSexp') (lookAhead (delim <|> eof))
+-- Parse an s-expression with lexing and delimiter checking.
+sexp :: Parser Sexp
+sexp = terminatedBy (lexeme sexp') (lookAhead (delim <|> eof))
     where
         lexeme :: Parser a -> Parser a
         lexeme p = spaces >> p
@@ -252,5 +257,6 @@ parseSexp = terminatedBy (lexeme parseSexp') (lookAhead (delim <|> eof))
         delim :: Parser ()
         delim = (delimiter <|> (skip $ P.string "#|") <|> eof) <?> "delimiter"
 
+-- Parse an R⁷RS Scheme program.
 scheme :: Parser [Sexp]
-scheme = many parseSexp
+scheme = many sexp
