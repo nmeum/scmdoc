@@ -4,6 +4,7 @@ module SchemeDoc.Scheme.Includer (expand) where
 import SchemeDoc
 import SchemeDoc.Parser.R7RS
 
+import Data.Char (toLower)
 import Control.Exception
 import qualified Text.ParserCombinators.Parsec as P
 
@@ -15,6 +16,10 @@ instance Exception ExpandException
 -- Helper function to throw a syntax error.
 throwSyntax :: Sexp -> String -> IO a
 throwSyntax e m = throwIO $ ErrSyntax (SyntaxError e m)
+
+-- The Scheme string-foldcase procedure.
+foldcase :: String -> String
+foldcase = map toLower
 
 ------------------------------------------------------------------------
 
@@ -32,15 +37,17 @@ parseFromFile p fileName = do
 --      | (include <string>+)
 --      | (include-ci <string>+)
 --
-expand :: Sexp -> IO Sexp
--- TODO: Implementing include-ci requires toLower form Data.Text
-expand (List ((Id "include-ci"):_)) = error "include-ci not implemented"
-expand (List ((Id "include"):fileNames)) = do
+expand' :: [Sexp] -> Bool -> IO Sexp
+expand' fileNames lower = do
     paths <- mapM (\case
-                    Str s -> pure s
+                    Str s -> pure $ if lower then foldcase s else s
                     e     -> throwSyntax e "expected list of strings")
              fileNames
 
     exprs <- (mapM (parseFromFile scheme) paths)
     pure $ List ([Id "begin"] ++ concat exprs)
+
+expand :: Sexp -> IO Sexp
+expand (List ((Id "include-ci"):fileNames)) = expand' fileNames True
+expand (List ((Id "include"):fileNames)) = expand' fileNames False
 expand e = throwSyntax e "not an include expression"
