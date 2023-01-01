@@ -129,8 +129,8 @@ exprParser = testGroup "Expression parser"
             (Right $ [Number 42])
             $ parse "  42"
 
-        -- assertEqual
-        --     "Whitespaces at end"
-        --     (Right $ [Number 42])
-        --     $ parse "42 "
+        assertEqual
+            "Whitespaces at end"
+            (Right $ [Number 42])
+            $ parse "42 "
     ]

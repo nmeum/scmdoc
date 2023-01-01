@@ -259,4 +259,10 @@ sexp = terminatedBy (lexeme sexp') (lookAhead (delim <|> eof))
 
 -- Parse an R⁷RS Scheme program.
 scheme :: Parser [Sexp]
-scheme = many sexp
+scheme = manyTill sexp (try $ spaces >> eof)
+-- TODO: Restructure to remove backtracking in manyTill.
+-- This is needed because in the case of trailing whitespaces
+-- the sexp parser will see the space and assume that a valid
+-- token follows is since lexeme removes spaces at the start
+-- and not at the end. Instead, spaces should be removed at
+-- the end by lexeme though this interferes with delimiter.
