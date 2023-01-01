@@ -2,10 +2,25 @@ module SchemeDoc.Scheme.Library
     (Library, findLibrary)
 where
 
+import Data.List (intercalate)
 import SchemeDoc
 
+newtype LibraryName = MkLibName [String]
+instance Show LibraryName where
+    show (MkLibName lst) = intercalate " " lst
+
+mkLibName :: Sexp -> Maybe LibraryName
+mkLibName (List exprs) = MkLibName <$>
+    foldr (\x acc -> case x of
+        Id  ident -> fmap ((:) ident) acc
+        -- TODO: Only allow exact non-negative integers.
+        Number n  -> fmap ((:) (show n :: String)) acc
+        _         -> Nothing) (Just []) exprs
+mkLibName _ = Nothing
+-- TODO: Actual error messages for invalid names (i.e. use Either).
+
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
-data Library = MkLibrary { name :: String
+data Library = MkLibrary { name :: LibraryName
                          --, imports :: [String]
                          --, exports :: [String]
                          , body :: [Sexp] }
@@ -13,16 +28,13 @@ data Library = MkLibrary { name :: String
 
 -- Check if the given s-expression constitutes an R⁷RS library declaration.
 findLibrary' :: Sexp -> Maybe Library
-findLibrary' (List ((Id "define-library"):(Id lname):xs)) =
-    Just $ MkLibrary lname xs
+findLibrary' (List ((Id "define-library"):x:xs)) =
+    fmap (\n -> MkLibrary n xs) $ mkLibName x
 findLibrary' _ = Nothing
 
--- Find a library declaration in a Scheme source.
--- This function only considers top-level declarations.
-findLibrary :: [Sexp] -> Maybe Library
-findLibrary (expr:xs) =
-    case findLibrary' expr of
-        Just lib -> Just lib
-        Nothing  -> findLibrary xs
-findLibrary [] = Nothing
--- TODO: A source file may have multiple library declarations.
+-- Find library declarations in a Scheme source.
+-- XXX: This function only considers top-level declarations.
+findLibrary :: [Sexp] -> [Library]
+findLibrary = foldl (\acc x -> case findLibrary' x of
+                        Just lib -> lib : acc
+                        Nothing  -> acc) []
