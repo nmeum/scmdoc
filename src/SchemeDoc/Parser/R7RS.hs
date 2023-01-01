@@ -216,9 +216,6 @@ string = fmap Str $
 number :: Parser Sexp
 number = fmap (Number . read) $ many1 digit
 
-list :: Parser Sexp
-list = fmap List $ many sexp
-
 -- Parse an S-Expression without lexing or delimiter handling
 -- according to the tokens defined in the R⁷RS formal syntax:
 --
@@ -245,6 +242,9 @@ sexp' = identifier
         <|> (char '`'  >> sexp)
         <|> ((P.string ",@" <|> P.string ",") >> sexp)
         -- TODO: Dotted pairs and dotted lists
+    where
+        list :: Parser Sexp
+        list = fmap List $ many sexp
 
 -- Parse an s-expression with lexing and delimiter checking.
 sexp :: Parser Sexp
