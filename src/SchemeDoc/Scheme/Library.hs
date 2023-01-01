@@ -12,9 +12,8 @@ instance Show LibraryName where
 mkLibName :: Sexp -> Either SyntaxError LibraryName
 mkLibName (List exprs) = MkLibName <$>
     foldr (\x acc -> case x of
-        Id  ident -> fmap ((:) ident) acc
-        -- TODO: Only allow exact non-negative integers.
-        Number n  -> fmap ((:) (show n :: String)) acc
+        Id  ident -> ((:) ident) <$> acc
+        Number n  -> ((:) (show n :: String)) <$> acc
         e         -> makeErr e "expected identifier or uinteger") (Right []) exprs
 mkLibName e = makeErr e "expected non-empty list"
 
@@ -40,23 +39,39 @@ exportDecl e = makeErr e "expected identifier or rename spec"
 --   <export expr> → (export <export spec>*)
 --
 mkExport :: Sexp -> Either SyntaxError [ExportSpec]
-mkExport (List ((Id "export"):exports)) = foldr (\x acc -> case exportDecl x of
+mkExport (List ((Id "export"):items)) = foldr (\x acc -> case exportDecl x of
         Right e -> fmap ((:) e) acc
-        Left e  -> Left e) (Right []) exports
+        Left e  -> Left e) (Right []) items
 mkExport e = makeErr e "expected export list"
+
+-- Find an export expression within a library declaration.
+-- May return an empty list if no export declaration was found.
+findExport :: [Sexp] -> Either SyntaxError [ExportSpec]
+findExport (e@(List ((Id "export"):_)):_) = mkExport e
+findExport (_:exprs) = findExport exprs
+findExport [] = Right []
 
 ------------------------------------------------------------------------
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
 data Library = MkLibrary { name :: LibraryName
-                         --, exports :: [String]
+                         , exports :: [ExportSpec]
                          , body :: [Sexp] }
     deriving (Show)
 
 -- Check if the given s-expression constitutes an R⁷RS library declaration.
 findLibrary' :: Sexp -> Either SyntaxError Library
-findLibrary' (List ((Id "define-library"):x:xs)) =
-    fmap (\n -> MkLibrary n xs) $ mkLibName x
+findLibrary' (List ((Id "define-library"):libraryName:xs)) = do
+    libraryName' <- case mkLibName libraryName of
+        Right n -> pure n
+        Left err -> Left err
+
+    exportSpec <- case findExport xs of
+        Right e -> pure e
+        Left err -> Left err
+
+    pure $ MkLibrary libraryName' exportSpec xs
+-- TODO: Handling of cond-expand?!
 findLibrary' e = makeErr e "found no library definition"
 
 -- Find library declarations in a Scheme source.
