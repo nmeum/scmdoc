@@ -242,6 +242,7 @@ sexp' = identifier
         <|> (char '`'  >> sexp)
         <|> ((P.string ",@" <|> P.string ",") >> sexp)
         -- TODO: Dotted pairs and dotted lists
+        -- TODO: Directive (#!fold-case, …)
     where
         list :: Parser Sexp
         list = fmap List $ many sexp
