@@ -2,8 +2,9 @@ module SchemeDoc.Scheme.Library
     (Library, findLibrary, mkExport, ExportSpec, expand, expand')
 where
 
+import Control.Exception
 import Data.List (intercalate)
-import Text.ParserCombinators.Parsec (parseFromFile)
+import Text.ParserCombinators.Parsec (parseFromFile, ParseError)
 import SchemeDoc
 import SchemeDoc.Parser.R7RS
 
@@ -83,12 +84,16 @@ findLibrary = foldr (\x acc -> case findLibrary' x of
                         Right lib -> fmap ((:) lib) acc
                         Left err  -> Left err) (Right [])
 
+data ExpandException = ErrSyntax SyntaxError | ErrParser ParseError
+    deriving Show
+
+instance Exception ExpandException
+
 includeFile :: String -> IO [Sexp]
 includeFile fileName = do
-    putStrLn $ "loading: " ++ fileName
     r <- parseFromFile scheme fileName
     case r of
-        Left err -> error $ show err
+        Left err -> throwIO $ ErrParser err
         Right s -> pure s
 
 -- Expand an include into a begin expression.
@@ -98,16 +103,17 @@ includeFile fileName = do
 --      | (include-ci <string>+)
 --
 expand' :: Sexp -> IO Sexp
---expand' (List [(Id "include-ci"), fileNames]) = _
+-- TODO: Implementing include-ci requires toLower form Data.Text
+expand' (List ((Id "include-ci"):_)) = error "include-ci not implemented"
 expand' (List ((Id "include"):fileNames)) = do
-    begins <- (mapM includeFile paths) :: IO [[Sexp]]
-    pure $ List ([Id "begin"] ++ concat begins)
-    where
-        paths :: [String]
-        paths = map (\x -> case x of
-            Str s -> s
-            _     -> error "invalid file name") fileNames
-expand' _ = error "not an include expression"
+    paths <- mapM (\x -> case x of
+                            Str s -> pure s
+                            e     -> throwIO $ ErrSyntax (SyntaxError e "expected list of strings"))
+             fileNames
+
+    exprs <- (mapM includeFile paths)
+    pure $ List ([Id "begin"] ++ concat exprs)
+expand' e = throwIO $ ErrSyntax (SyntaxError e "not an include expression")
 
 -- Expand the library declaration.
 -- Returns all begin blocks, including any includes.
