@@ -1,8 +1,8 @@
 cabal-version:      3.0
-name:               doclisp
+name:               scmdoc
 version:            0.1.0.0
--- synopsis:
--- description:
+synopsis:           R7RS Scheme documentation tool
+description:        Inline documentation tool for R7RS Scheme based on source code comments
 
 license:            AGPL-3.0-or-later
 license-file:       LICENSE
@@ -19,10 +19,9 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  MyLib
-                    , Parser.Scheme
-                    , Parser.Util
-                    , Types
+    exposed-modules:  SchemeDoc
+                    , SchemeDoc.Parser.R7RS
+                    , SchemeDoc.Parser.Util
     hs-source-dirs:   src
     default-language: Haskell2010
 
@@ -30,7 +29,7 @@ library
         base   ^>=4.15.1.0,
         parsec ^>=3.1.15.1
 
-executable doclisp
+executable scmdoc
     import:           warnings
     main-is:          Main.hs
     hs-source-dirs:   app
@@ -39,9 +38,9 @@ executable doclisp
     build-depends:
         base   ^>=4.15.1.0,
         parsec ^>=3.1.15.1,
-        doclisp
+        scmdoc
 
-test-suite doclisp-test
+test-suite scmdoc-test
     import:           warnings
     default-language: Haskell2010
     type:             exitcode-stdio-1.0
@@ -54,4 +53,4 @@ test-suite doclisp-test
         tasty        ^>=1.4.2.3,
         tasty-hunit  ^>=0.10.0.3,
         parsec       ^>=3.1.15.1,
-        doclisp
+        scmdoc

@@ -1,4 +1,4 @@
-module Types where
+module SchemeDoc where
 
 data Sexp = Str      String  -- "foo"
           | Id       String  -- foo

@@ -3,8 +3,8 @@ module SchemeParser where
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import SchemeDoc
-import SchemeDoc.Parser.R7RS
+import Types
+import Parser.Scheme
 import Text.ParserCombinators.Parsec hiding (string)
 
 parseErrors :: Parser a -> String -> String

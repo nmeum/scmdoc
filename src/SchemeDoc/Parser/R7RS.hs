@@ -1,7 +1,7 @@
-module Parser.Scheme where
+module SchemeDoc.Parser.R7RS where
 
-import Types
-import Parser.Util
+import SchemeDoc
+import SchemeDoc.Parser.Util
 
 import Data.Char
 

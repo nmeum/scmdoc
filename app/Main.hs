@@ -4,7 +4,7 @@ import System.Exit
 import System.IO
 import System.Environment
 
-import Parser.Scheme
+import SchemeDoc.Parser.R7RS
 import Text.Parsec.String
 
 parse :: Parser a -> String -> IO a

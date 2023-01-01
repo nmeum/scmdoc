@@ -1,4 +1,8 @@
-# Related Work
+# scmdoc
+
+An inline source code documentation tool for R⁷RS Scheme.
+
+## Related Work
 
 * SchemeDoc / …
 * https://ctan.org/pkg/schemeweb

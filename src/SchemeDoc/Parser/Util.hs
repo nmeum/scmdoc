@@ -1,4 +1,4 @@
-module Parser.Util where
+module SchemeDoc.Parser.Util where
 
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
