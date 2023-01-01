@@ -2,6 +2,15 @@
 
 An inline source code documentation tool for R⁷RS Scheme.
 
+## Motivation
+
+Tooling for inline source code documentation of Scheme code is rare.
+Existing tools like [chibi-doc][chibi-doc source] actually interpret/load the documented code and thus do not work if, for example, some utilized libraries are not available for `chibi-scheme`.
+To overcome this limitation `scmdoc` takes a different approach were the code is not interpreted and only parsed.
+This allows `scmdoc` to be applicable to R⁷RS code for different implementations/dialect as long as the input is syntactically valid R⁷RS.
+In its essence, `scmdoc` is a glorified pattern matcher for S-expressions.
+It extracts (custom?) S-expressions preceded by a special doc-comment and formats them according to (user-supplied?) rules.
+
 ## Related Work
 
 * SchemeDoc / …
@@ -13,3 +22,5 @@ An inline source code documentation tool for R⁷RS Scheme.
     * Further Development: https://christian.queinnec.org/WWW/l2t.html
 * MOLE: http://www.schemeworkshop.org/2001/lisovsky.pdf
 * https://orgmode.org/manual/Extracting-Source-Code.html
+
+[chibi-doc source]: https://github.com/ashinn/chibi-scheme/blob/master/tools/chibi-doc
