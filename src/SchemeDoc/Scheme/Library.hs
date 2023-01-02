@@ -94,7 +94,7 @@ libExports lib ident = any (\MkExport{internal=i} -> i == ident) $
                            exports lib
 
 -- Expand the library declaration.
--- Returns all begin blocks, including any include expressions.
+-- Returns all begin blocks, including includer expressions as expanded begin blocks.
 libExpand :: Library -> IO [Sexp]
 libExpand (MkLibrary{body=decl}) = foldM libExpand' [] decl
     where
