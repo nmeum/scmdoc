@@ -1,7 +1,8 @@
 module SchemeDoc.Scheme.Library
-    (Library, findLibrary, ExportSpec, libExpand)
+    (Library, findLibraries, libName, libExports, libExpand)
 where
 
+import Control.Monad (foldM)
 import Data.List (intercalate)
 import SchemeDoc
 import SchemeDoc.Scheme.Includer
@@ -56,13 +57,13 @@ findExport [] = Right []
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
 data Library = MkLibrary { name    :: LibraryName
-                         , exports :: [ExportSpec]
+                         , exports :: [ExportSpec] -- TODO: Make this a set
                          , body    :: [Sexp] }
     deriving (Show)
 
 -- Check if the given s-expression constitutes an R⁷RS library declaration.
-findLibrary' :: Sexp -> Either SyntaxError Library
-findLibrary' (List ((Id "define-library"):libraryName:xs)) = do
+findLibraries' :: Sexp -> Either SyntaxError Library
+findLibraries' (List ((Id "define-library"):libraryName:xs)) = do
     libraryName' <- case mkLibName libraryName of
         Right n  -> pure n
         Left err -> Left err
@@ -73,22 +74,32 @@ findLibrary' (List ((Id "define-library"):libraryName:xs)) = do
 
     pure $ MkLibrary libraryName' exportSpec xs
 -- TODO: Handling of cond-expand?!
-findLibrary' e = makeErr e "found no library definition"
+findLibraries' e = makeErr e "found no library definition"
 
 -- Find library declarations in a Scheme source.
 -- XXX: This function only considers top-level declarations.
-findLibrary :: [Sexp] -> Either SyntaxError [Library]
-findLibrary = foldr (\x acc -> case findLibrary' x of
+findLibraries :: [Sexp] -> Either SyntaxError [Library]
+findLibraries = foldr (\x acc -> case findLibraries' x of
                         Right lib -> fmap ((:) lib) acc
                         Left err  -> Left err) (Right [])
+
+-- Name of the library.
+-- Multiple identifiers are joined by a single ' ' character.
+libName :: Library -> String
+libName = show . name
+
+-- Whether the library exports the given **internal** identifier.
+libExports :: Library -> String -> Bool
+libExports lib ident = any (\MkExport{internal=i} -> i == ident) $
+                           exports lib
 
 -- Expand the library declaration.
 -- Returns all begin blocks, including any include expressions.
 libExpand :: Library -> IO [Sexp]
-libExpand (MkLibrary{body=decl}) = mapM expand $ filter matches decl
+libExpand (MkLibrary{body=decl}) = foldM libExpand' [] decl
     where
-        matches :: Sexp -> Bool
-        matches (List [(Id "begin"), _]) = True
-        matches (List [(Id "include"), _]) = True
-        matches (List [(Id "include-ci"), _]) = True
-        matches _ = False
+        libExpand' :: [Sexp] -> Sexp -> IO [Sexp]
+        libExpand' acc e@(List ((Id "begin"):_))      = pure $ e : acc
+        libExpand' acc e@(List ((Id "include"):_))    = expand e >>= (\x -> pure $ x : acc)
+        libExpand' acc e@(List ((Id "include-ci"):_)) = expand e >>= (\x -> pure $ x : acc)
+        libExpand' acc _ = pure acc

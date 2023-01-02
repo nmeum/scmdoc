@@ -49,6 +49,8 @@ test-suite scmdoc-test
     hs-source-dirs:   test
     main-is:          Main.hs
     other-modules:    SchemeParser
+                    , Library
+                    , Util
 
     build-depends:
         base         ^>=4.15.1.0,
