@@ -11,6 +11,12 @@ data Sexp = Str        String  -- "foo"
           | DocComment String
     deriving (Show, Eq)
 
+-- Traverse a Scheme source, i.e. a list of S-expressions.
+walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b
+walk proc acc src = foldl (\a x -> case x of
+    List exprs -> walk proc (proc a x) exprs
+    expr       -> proc a expr) acc src
+
 ------------------------------------------------------------------------
 
 -- A syntax error occuring during processing of S-Expressions.
