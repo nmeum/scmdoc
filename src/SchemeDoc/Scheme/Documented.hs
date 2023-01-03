@@ -1,4 +1,4 @@
-module SchemeDoc.Scheme.Documented (findDocumented) where
+module SchemeDoc.Scheme.Documented (Documented(..), findDocumented) where
 
 import Data.List (partition)
 import SchemeDoc
