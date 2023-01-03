@@ -4,6 +4,9 @@ import System.Exit
 import System.IO
 import System.Environment
 
+import SchemeDoc
+import SchemeDoc.Scheme.Library
+import SchemeDoc.Scheme.Documented
 import SchemeDoc.Parser.R7RS
 import Text.Parsec.String
 
@@ -14,6 +17,18 @@ parse p fileName = parseFromFile p fileName >>= either report return
         hPutStrLn stderr $ "Error: " ++ show err
         exitFailure
 
+getDoc :: Library -> IO String
+getDoc lib = do
+    decls <- libExpand lib
+    let docs = findDocumented decls
+    pure $ "# " ++ libName lib ++ "\n" ++ (foldl (\acc x -> acc ++ "\n" ++ (show x)) "" docs)
+
+getDocs :: [Sexp] -> IO String
+getDocs src = do
+    case findLibraries src of
+        Right libs -> getDoc $ head libs
+        Left err -> error (show err)
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -21,4 +36,5 @@ main = do
         then error "invalid amount of args"
         else do
             r <- parse scheme (head args)
-            putStrLn $ show r
+            doc <- getDocs r
+            putStrLn doc
