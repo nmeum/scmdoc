@@ -117,6 +117,11 @@ exprParser = testGroup "Expression parser"
             $ parse "  ;; foo\n"
 
         assertEqual
+            "Commant with trailing spaces"
+            (Right $ [List [Id "define", Id "x", Number 42]])
+            $ parse "(define x\n\t;; foo\n\t42)"
+
+        assertEqual
             "Documentation comment"
             (Right $ [DocComment "my comment", List [Id "define",Id "x",Number 2]])
             $ parse ";;> my comment\n(define x 2)"
