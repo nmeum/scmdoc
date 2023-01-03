@@ -276,6 +276,6 @@ scheme = manyTill sexp (try $ lexeme eof)
 
 -- Strip whitespaces and comments between tokens.
 lexeme :: Parser a -> Parser a
-lexeme p = (skip (try $ spaces >> comment) <|> spaces) >> p
+lexeme p = (skip spaces >> optional (try comment)) >> p
 -- “Comments are treated exactly like whitespace.”
 -- Comments require backtracking for docComment parser.
