@@ -112,6 +112,11 @@ exprParser = testGroup "Expression parser"
 
     , testCase "Miscellaneous" $ do
         assertEqual
+            "Comment with leading spaces"
+            (Right $ [])
+            $ parse "  ;; foo\n"
+
+        assertEqual
             "Documentation comment"
             (Right $ [DocComment "my comment", List [Id "define",Id "x",Number 2]])
             $ parse ";;> my comment\n(define x 2)"
