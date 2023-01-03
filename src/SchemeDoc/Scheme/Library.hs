@@ -7,12 +7,12 @@ import Data.List (intercalate)
 import SchemeDoc
 import SchemeDoc.Scheme.Includer
 
-newtype LibraryName = MkLibName [String]
+newtype LibraryName = LibName [String]
 instance Show LibraryName where
-    show (MkLibName lst) = intercalate " " lst
+    show (LibName lst) = intercalate " " lst
 
 mkLibName :: Sexp -> Either SyntaxError LibraryName
-mkLibName (List exprs) = MkLibName <$>
+mkLibName (List exprs) = LibName <$>
     mapM (\x -> case x of
         Id  ident -> Right $ ident
         Number n  -> Right $ (show n :: String)
@@ -23,7 +23,7 @@ mkLibName e = makeErr e "expected non-empty list"
 
 -- Export specification with internal name and external name.
 -- For exports which are not renamed both are the same.
-data ExportSpec = MkExport { internal :: String, external :: String }
+data ExportSpec = Export { internal :: String, external :: String }
     deriving (Show)
 
 -- Export declaration for a library declaration.
@@ -32,8 +32,8 @@ data ExportSpec = MkExport { internal :: String, external :: String }
 --      | (rename <identifier> <identifier>)
 --
 exportDecl :: Sexp -> Either SyntaxError ExportSpec
-exportDecl (List [Id "rename", Id i1, Id i2]) = Right $ MkExport i1 i2
-exportDecl (Id i) = Right $ MkExport i i
+exportDecl (List [Id "rename", Id i1, Id i2]) = Right $ Export i1 i2
+exportDecl (Id i) = Right $ Export i i
 exportDecl e = makeErr e "expected identifier or rename spec"
 
 -- Export expression as part of a library declaration.
@@ -56,7 +56,7 @@ findExport [] = Right []
 ------------------------------------------------------------------------
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
-data Library = MkLibrary { name    :: LibraryName
+data Library = Library { name    :: LibraryName
                          , exports :: [ExportSpec] -- TODO: Make this a set
                          , body    :: [Sexp] }
     deriving (Show)
@@ -72,7 +72,7 @@ findLibraries' (List ((Id "define-library"):libraryName:xs)) = do
         Right e  -> pure e
         Left err -> Left err
 
-    pure $ MkLibrary libraryName' exportSpec xs
+    pure $ Library libraryName' exportSpec xs
 -- TODO: Handling of cond-expand?!
 findLibraries' e = makeErr e "found no library definition"
 
@@ -90,13 +90,13 @@ libName = show . name
 
 -- Whether the library exports the given **internal** identifier.
 libExports :: Library -> String -> Bool
-libExports lib ident = any (\MkExport{internal=i} -> i == ident) $
+libExports lib ident = any (\Export{internal=i} -> i == ident) $
                            exports lib
 
 -- Expand the library declaration.
 -- Returns all begin blocks, including includer expressions as expanded begin blocks.
 libExpand :: Library -> IO [Sexp]
-libExpand (MkLibrary{body=decl}) = foldM libExpand' [] decl
+libExpand (Library{body=decl}) = foldM libExpand' [] decl
     where
         libExpand' :: [Sexp] -> Sexp -> IO [Sexp]
         libExpand' acc e@(List ((Id "begin"):_))      = pure $ e : acc
