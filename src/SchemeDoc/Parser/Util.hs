@@ -1,5 +1,6 @@
 module SchemeDoc.Parser.Util where
 
+import Data.Char (isSpace)
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
 
@@ -29,7 +30,12 @@ terminatedBy p1 p2 = do
 
 ------------------------------------------------------------------------
 
+-- Remove all Nothing value from a List of Maybe monads.
 filterJust :: [Maybe a] -> [a]
 filterJust = foldr (\x acc -> case x of
                                 Nothing -> acc
                                 Just x' -> x' : acc) []
+
+-- Trim all whitespaces from the left side of a string.
+ltrim :: String -> String
+ltrim = dropWhile isSpace

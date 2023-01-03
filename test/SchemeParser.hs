@@ -6,7 +6,6 @@ import Test.Tasty.HUnit
 import Util
 import SchemeDoc
 import SchemeDoc.Parser.R7RS
-import qualified Text.ParserCombinators.Parsec as P
 
 schemeParser :: TestTree
 schemeParser = testGroup "Tests for the Scheme parser"
@@ -91,7 +90,6 @@ exprParser = testGroup "Expression parser"
             "With comment"
             (Right $ [
                 List [ Id "define", Id "x", Number 1 ],
-                Comment "foo",
                 List [ Id "define", Id "y", Number 2 ]
             ])
             $ parse "(define x 1)#|foo|#(define y 2)"
@@ -113,6 +111,11 @@ exprParser = testGroup "Expression parser"
             $ parse "'  ()"
 
     , testCase "Miscellaneous" $ do
+        assertEqual
+            "Documentation comment"
+            (Right $ [DocComment "my comment", List [Id "define",Id "x",Number 2]])
+            $ parse ";;> my comment\n(define x 2)"
+
         assertEqual
             "Whitespaces at start"
             (Right $ [Number 42])

@@ -156,20 +156,30 @@ delimiter = skip $ space <|> char '|' <|> char '(' <|> char ')' <|> char '"' <|>
 nestedComment :: Parser String
 nestedComment = P.string "#|" >> manyTill anyChar (P.string "|#")
 
-------------------------------------------------------------------------
-
 -- Source code comment.
 --
---  <comment> → ; <all subsequent characters up to a
---      line ending>
+--  <comment> → ; <all subsequent characters up to a line ending>
 --      | <nested comment>
 --      | #; <intertoken space> <datum>
 --
-comment :: Parser Sexp
-comment = fmap (Comment . unwords . words) $
-          (char ';' >> manyTill anyChar endOfLine)
+-- This parser intentionally ignores documentation comments.
+-- See the docComment parser below.
+comment :: Parser ()
+comment = skip $
+          (char ';' >> notFollowedBy (P.string ";>") >> manyTill anyChar endOfLine)
            <|> nestedComment
       -- TODO: #; comments
+
+------------------------------------------------------------------------
+
+-- A source code comment for documentation purposes.
+-- This is a custom SchemeDoc specific grammar rule.
+--
+--  <doc comment> → ;;> <all subsequent characters up to a line ending>
+--
+docComment :: Parser Sexp
+docComment = fmap (DocComment . ltrim) $
+    P.string ";;>" >> manyTill anyChar endOfLine
 
 -- Scheme identifier or symbol.
 --
@@ -230,10 +240,10 @@ sexp' = identifier
         <|> number
         <|> string
         <|> (between (char '(') (char ')') list)
+        <|> docComment
         -- Boolean, comments, and {bit,}vectors all start with
         -- a `#` character and thus require backtracking.
         <|> try boolean
-        <|> try comment
         -- XXX: Treat vector and bytevector as list for now
         <|> try (between (P.string "#(") (P.char ')') list)
         <|> between (P.string "#u8(") (P.char ')') list
@@ -251,19 +261,21 @@ sexp' = identifier
 sexp :: Parser Sexp
 sexp = terminatedBy (lexeme sexp') (lookAhead (delim <|> eof))
     where
-        lexeme :: Parser a -> Parser a
-        lexeme p = spaces >> p
-
-        -- “Comments are treated exactly like whitespace.”
         delim :: Parser ()
         delim = (delimiter <|> (skip $ P.string "#|") <|> eof) <?> "delimiter"
 
 -- Parse an R⁷RS Scheme program.
 scheme :: Parser [Sexp]
-scheme = manyTill sexp (try $ spaces >> eof)
+scheme = manyTill sexp (try $ lexeme eof)
 -- TODO: Restructure to remove backtracking in manyTill.
 -- This is needed because in the case of trailing whitespaces
 -- the sexp parser will see the space and assume that a valid
 -- token follows is since lexeme removes spaces at the start
 -- and not at the end. Instead, spaces should be removed at
 -- the end by lexeme though this interferes with delimiter.
+
+-- Strip whitespaces and comments between tokens.
+lexeme :: Parser a -> Parser a
+lexeme p = (skip (try comment) <|> spaces) >> p
+-- “Comments are treated exactly like whitespace.”
+-- Comments require backtracking for docComment parser.
