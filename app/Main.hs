@@ -5,7 +5,7 @@ import System.IO
 import System.Environment
 
 import SchemeDoc
-import SchemeDoc.Formatter
+import SchemeDoc.Format.Formatter
 import SchemeDoc.Documentation.Markdown
 import SchemeDoc.Scheme.Library
 import SchemeDoc.Scheme.Documented
@@ -23,7 +23,7 @@ getDoc :: Library -> IO String
 getDoc lib = do
     decls <- libExpand lib
     let docs = findDocumented decls
-    pure $ "# " ++ libName lib ++ "\n\n" ++ (mkMarkdown $ format docs)
+    pure $ "# " ++ libName lib ++ "\n\n" ++ (mkMarkdown $ format defFormatter docs)
 
 getDocs :: [Sexp] -> IO String
 getDocs src = do

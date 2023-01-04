@@ -27,7 +27,10 @@ library
                     , SchemeDoc.Scheme.Documented
                     , SchemeDoc.Documentation.AST
                     , SchemeDoc.Documentation.Markdown
-                    , SchemeDoc.Formatter
+                    , SchemeDoc.Format.Constant
+                    , SchemeDoc.Format.Formatter
+                    , SchemeDoc.Format.Procedure
+                    , SchemeDoc.Format.Types
     hs-source-dirs:   src
     default-language: Haskell2010
 
