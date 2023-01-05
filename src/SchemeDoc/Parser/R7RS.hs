@@ -178,8 +178,8 @@ comment = skip $
 --  <doc comment> → ;;> <all subsequent characters up to a line ending>
 --
 docComment :: Parser Sexp
-docComment = fmap (DocComment . ltrim) $
-    P.string ";;>" >> manyTill anyChar endOfLine
+docComment = fmap (DocComment . ltrim . concat) $
+    (many1 $ P.string ";;>" >> manyTill anyChar endOfLine)
 
 -- Scheme identifier or symbol.
 --

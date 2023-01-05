@@ -127,6 +127,11 @@ exprParser = testGroup "Expression parser"
             $ parse ";;> my comment\n(define x 2)"
 
         assertEqual
+            "Multi-line documentation comment"
+            (Right $ [DocComment "foo bar baz", List [Id "define", Id "x", Number 2]])
+            $ parse ";;> foo\n;;> bar\n;;> baz\n(define x 2)"
+
+        assertEqual
             "Whitespaces at start"
             (Right $ [Number 42])
             $ parse "  42"

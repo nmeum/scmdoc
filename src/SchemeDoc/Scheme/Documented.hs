@@ -1,4 +1,4 @@
-module SchemeDoc.Scheme.Documented (Documented(..), findDocumented) where
+module SchemeDoc.Scheme.Documented (Documented(..), findDocumented, filterDocumented) where
 
 import Data.List (partition)
 import SchemeDoc
@@ -15,6 +15,14 @@ data Documented = Documented String Sexp
 isDocComment :: Sexp -> Bool
 isDocComment (DocComment _) = True
 isDocComment _ = False
+
+filterDocumented :: [Sexp] -> [Sexp]
+filterDocumented exprs = snd $ foldl filterDocumented' (False, []) exprs
+    where
+        --filterDocumented' (last, acc) x
+        filterDocumented' (False, acc) c@(DocComment _) = (True, acc ++ [c])
+        filterDocumented' (True, acc) expr = (False, acc ++ [expr])
+        filterDocumented' b _ = b
 
 findDocumented' :: [Sexp] -> Sexp -> [Sexp]
 findDocumented' ((DocComment s'):xs) (DocComment s) = (DocComment $ s ++ s') : xs
