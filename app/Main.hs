@@ -31,6 +31,13 @@ findDocLibs' exprs =
             hPutStrLn stderr $ "Error: " ++ show err
             exitFailure
 
+main' :: String -> IO ()
+main' fileName = do
+    source <- parse scheme fileName
+    libs <- findDocLibs' source
+    _ <- mapM writeDoc libs
+    pure ()
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -38,8 +45,4 @@ main = do
         then do
             hPutStrLn stderr "USAGE: scmdoc FILE"
             exitFailure
-        else do
-            source <- parse scheme $ head args
-            libs <- findDocLibs' source
-            _ <- mapM writeDoc libs
-            pure ()
+        else main' $ head args
