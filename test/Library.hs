@@ -6,6 +6,7 @@ import Test.Tasty.HUnit
 import Util
 import SchemeDoc
 import SchemeDoc.Scheme.Library
+import SchemeDoc.Format.Library
 
 libraryParser :: TestTree
 libraryParser = testGroup "Tests for the Library parser"

@@ -5,13 +5,12 @@ import System.IO
 import System.Environment
 
 import SchemeDoc
-import SchemeDoc.Format.Formatter
 import SchemeDoc.Documentation.Markdown
 import SchemeDoc.Scheme.Library
-import SchemeDoc.Scheme.Documented
 import SchemeDoc.Parser.R7RS
 import Text.Parsec.String
 
+-- TODO: Reuse include parser
 parse :: Parser a -> String -> IO a
 parse p fileName = parseFromFile p fileName >>= either report return
   where
@@ -19,24 +18,28 @@ parse p fileName = parseFromFile p fileName >>= either report return
         hPutStrLn stderr $ "Error: " ++ show err
         exitFailure
 
-getDoc :: Library -> IO String
-getDoc lib = do
-    decls <- libExpand lib
-    let docs = findDocumented decls
-    pure $ "# " ++ libName lib ++ "\n\n" ++ (mkMarkdown $ format defFormatter docs)
+writeDoc :: DocLib -> IO ()
+writeDoc lib = do
+    decls <- docDecls lib
+    putStrLn $ mkMarkdown (docFmt lib decls)
 
-getDocs :: [Sexp] -> IO String
-getDocs src = do
-    case findLibraries src of
-        Right libs -> getDoc $ head libs
-        Left err -> error (show err)
+findDocLibs' :: [Sexp] -> IO ([DocLib])
+findDocLibs' exprs =
+    case findDocLibs exprs of
+        Right libs -> pure libs
+        Left err -> do
+            hPutStrLn stderr $ "Error: " ++ show err
+            exitFailure
 
 main :: IO ()
 main = do
     args <- getArgs
     if length args /= 1
-        then error "invalid amount of args"
+        then do
+            hPutStrLn stderr "USAGE: scmdoc FILE"
+            exitFailure
         else do
-            r <- parse scheme (head args)
-            doc <- getDocs r
-            putStrLn doc
+            source <- parse scheme $ head args
+            libs <- findDocLibs' source
+            _ <- mapM writeDoc libs
+            pure ()
