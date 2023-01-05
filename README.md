@@ -24,6 +24,12 @@ This software can be installed using the following commands:
 
 Afterwards, the binary should be available via `~/.cabal/bin/scmdoc`.
 
+## Tests
+
+Unit tests are available and can be invoked using the following command:
+
+    $ cabal test
+
 ## Approach
 
 The `scmdoc` tool is structured around R7RS Scheme libraries.
