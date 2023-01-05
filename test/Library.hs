@@ -5,46 +5,46 @@ import Test.Tasty.HUnit
 
 import Util
 import SchemeDoc
-import SchemeDoc.Scheme.Library
+import SchemeDoc.Types
 import SchemeDoc.Format.Library
 
 libraryParser :: TestTree
 libraryParser = testGroup "Tests for the Library parser"
     [ testCase "Library with exports and without declarations" $ do
-        let input = "(define-library (foo) (export string-length))"
+        let input = ";;> my comment\n(define-library (foo) (export string-length))"
         let (Right expr) = parse input
 
-        let (Right libraries) = findLibraries expr
+        let (Right libraries) = findDocLibs expr
         assertEqual "Amount of libraries" 1 $ length libraries
 
-        let library = head libraries
+        let library = snd $ head libraries
         assertEqual "Library name" "foo" $ libName library
         assertEqual "Exports string-length" True $ libExports library "string-length"
         assertEqual "Doesn't export foo" False $ libExports library "foo"
 
     , testCase "Multiple library definitions in a single file" $ do
-        let input = "(define-library (foo)) (define-library (bar))"
+        let input = ";;> foo library\n(define-library (foo))\n;;> bar library\n(define-library (bar))"
         let (Right expr) = parse input
 
-        let (Right libs) = findLibraries expr
+        let (Right libs) = findDocLibs expr
         assertEqual "Amount of libraries" 2 $ length libs
 
-        assertEqual "First library name" "foo" $ libName (libs !! 0)
-        assertEqual "Second library name" "bar" $ libName (libs !! 1)
+        assertEqual "First library name" "foo" $ libName (snd $ libs !! 0)
+        assertEqual "Second library name" "bar" $ libName (snd $ libs !! 1)
 
     , testCase "Multipart library name" $ do
-        let input = "(define-library (foo  42 bar   23 baz))"
+        let input = ";;> my comment\n(define-library (foo  42 bar   23 baz))"
         let (Right expr) = parse input
 
-        let (Right libs) = findLibraries expr
-        assertEqual "" "foo 42 bar 23 baz" $ libName (head libs)
+        let (Right libs) = findDocLibs expr
+        assertEqual "" "foo 42 bar 23 baz" $ libName (snd $ head libs)
 
     , testCase "Library with library declaration" $ do
-        let input = "(define-library (scheme example) (begin (define x 23) (define y 42)))"
+        let input = ";;> scheme example library\n(define-library (scheme example) (begin (define x 23) (define y 42)))"
         let (Right expr) = parse input
 
-        let (Right libs) = findLibraries expr
-        expanded <- libExpand (head libs)
+        let (Right libs) = findDocLibs expr
+        expanded <- libExpand (snd $ head libs)
 
         assertEqual
             ""
@@ -56,11 +56,11 @@ libraryParser = testGroup "Tests for the Library parser"
             ] expanded
 
     , testCase "Library with multiple declarations" $ do
-        let input = "(define-library (scheme example) (begin (define x 23)) (begin (define y 42)))"
+        let input = ";;> my lib\n(define-library (scheme example) (begin (define x 23)) (begin (define y 42)))"
         let (Right expr) = parse input
 
-        let (Right libs) = findLibraries expr
-        expanded <- libExpand (head libs)
+        let (Right libs) = findDocLibs expr
+        expanded <- libExpand (snd $ head libs)
 
         assertEqual
             ""
@@ -69,11 +69,11 @@ libraryParser = testGroup "Tests for the Library parser"
             expanded
 
     , testCase "Library with include" $ do
-        let input = "(define-library (some example) (include \"test/testdata/simple-include.scm\"))"
+        let input = ";;> doc comment\n(define-library (some example) (include \"test/testdata/simple-include.scm\"))"
         let (Right expr) = parse input
 
-        let (Right libs) = findLibraries expr
-        expanded <- libExpand (head libs)
+        let (Right libs) = findDocLibs expr
+        expanded <- libExpand (snd $ head libs)
 
         assertEqual "" [List [Id "begin",List [Id "define",Id "x",Str "foo"]]] expanded
     ]

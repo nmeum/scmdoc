@@ -5,6 +5,7 @@ import Test.Tasty.HUnit
 
 import Util
 import SchemeDoc
+import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
 
 schemeParser :: TestTree
