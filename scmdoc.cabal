@@ -21,12 +21,11 @@ library
     import:           warnings
     exposed-modules:  SchemeDoc
                     , SchemeDoc.Types
+                    , SchemeDoc.Output
                     , SchemeDoc.SyntaxError
                     , SchemeDoc.Include
                     , SchemeDoc.Parser.R7RS
                     , SchemeDoc.Parser.Util
-                    , SchemeDoc.Documentation.AST
-                    , SchemeDoc.Documentation.Markdown
                     , SchemeDoc.Format.Constant
                     , SchemeDoc.Format.Formatter
                     , SchemeDoc.Format.Procedure

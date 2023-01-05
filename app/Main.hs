@@ -7,8 +7,8 @@ import Text.Parsec.String
 
 import SchemeDoc
 import SchemeDoc.Types
-import SchemeDoc.Documentation.Markdown
 import SchemeDoc.Parser.R7RS
+import SchemeDoc.Output
 
 -- TODO: Reuse include parser
 parse :: Parser a -> String -> IO a

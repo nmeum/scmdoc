@@ -6,7 +6,7 @@ import SchemeDoc.Types
 import SchemeDoc.SyntaxError
 import SchemeDoc.Format.Library
 import SchemeDoc.Format.Formatter
-import SchemeDoc.Documentation.AST
+import SchemeDoc.Output
 
 -- A documented Scheme library.
 type DocLib = (String, Library)

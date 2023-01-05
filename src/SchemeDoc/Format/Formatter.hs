@@ -5,7 +5,7 @@ where
 import Control.Applicative
 
 import SchemeDoc.Types
-import SchemeDoc.Documentation.AST
+import SchemeDoc.Output
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Procedure
 import SchemeDoc.Format.Constant
