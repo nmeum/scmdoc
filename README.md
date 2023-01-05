@@ -49,7 +49,7 @@ For example, the formatter for Scheme procedure definitions roughly looks as fol
 
 In the future, it should be possible to also supply custom formatters to, for example, to generate documentation for definitions defined using custom macros.
 
-## Usage
+## Usage Example
 
 The `scmdoc` tool generates Markdown from a Scheme input defining a R7RS library.
 As described above, only documented S-expressions for which a documentation formatter is available are included in the generated documentation.
@@ -68,7 +68,7 @@ In order to demonstrate generation of Markdown documentation consider the follow
         (define (my-proc x)
           (my-mult x 2))
 
-        ;;> A magic constant
+        ;;> A magic constant.
         (define my-magic-constant 42)))
 
 In order to generate Markdown documentation, using `scmdoc`, for this library run the following command:
@@ -81,17 +81,19 @@ This will generate the following Markdown document (extra whitespaces added for 
 
     This is my documented library.
 
-    ## Constant my-magic-constant
-
-    A magic constant
-
-    	my-magic-constant
-
     ## Procedure my-proc
 
     my-proc multiplies the given value with two.
 
     	(my-proc x)
+
+    ## Constant my-magic-constant
+
+    A magic constant.
+
+    	my-magic-constant
+
+This file can then be processed further with a suitable Markdown implementation to generate an HTML or PDF document (e.g. [pandoc][pandoc web] or [discount][discount web]).
 
 ## Related Work
 
@@ -120,3 +122,5 @@ Free Software Foundation.
 [gambit web]: https://www.gambitscheme.org/
 [racket r7rs]: https://pkgs.racket-lang.org/package/r7rs
 [chibi-doc source]: https://github.com/ashinn/chibi-scheme/blob/master/tools/chibi-doc
+[pandoc web]: https://pandoc.org/
+[discount web]: http://www.pell.portland.or.us/~orc/Code/discount/

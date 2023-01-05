@@ -31,5 +31,5 @@ runFormat lib f expr = f expr >>= (\(n, x) -> if libExports lib n
 format :: Library -> Formatter -> [Documented] -> [Block String]
 format lib formatFn = foldl (\acc (comment, expr) ->
                                 case runFormat lib formatFn expr of
-                                    Just f  -> (f comment) ++ acc
+                                    Just f  -> acc ++ (f comment)
                                     Nothing -> acc) []
