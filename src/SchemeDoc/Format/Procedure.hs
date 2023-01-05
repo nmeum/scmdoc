@@ -11,6 +11,7 @@ data Procedure = Procedure { name   :: String
     deriving (Show)
 
 instance Formatable Procedure where
+    sid (Procedure{name=n}) = n
     fmt (Procedure{name=n, params=p}) =
         (\comment -> [ Heading H2 $ "Procedure " ++ n
                      , Paragraph comment

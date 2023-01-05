@@ -18,6 +18,7 @@ data Library = Library { name    :: LibraryName
     deriving (Show)
 
 instance Formatable Library where
+    sid (Library{name=n}) = show n
     fmt (Library{name=n}) =
         (\comment -> [ Heading H1 $ "Library " ++ (show n)
                      , Paragraph comment ])
