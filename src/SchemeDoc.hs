@@ -3,7 +3,7 @@ module SchemeDoc
 where
 
 import SchemeDoc.Types
-import SchemeDoc.SyntaxError
+import SchemeDoc.Error
 import SchemeDoc.Format.Library
 import SchemeDoc.Format.Formatter
 import SchemeDoc.Output

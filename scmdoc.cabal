@@ -22,8 +22,8 @@ library
     exposed-modules:  SchemeDoc
                     , SchemeDoc.Types
                     , SchemeDoc.Output
-                    , SchemeDoc.SyntaxError
-                    , SchemeDoc.Include
+                    , SchemeDoc.Error
+                    , SchemeDoc.Util
                     , SchemeDoc.Parser.R7RS
                     , SchemeDoc.Parser.Util
                     , SchemeDoc.Format.Constant

@@ -1,12 +1,14 @@
+{-# LANGUAGE LambdaCase #-}
 module SchemeDoc.Format.Library where
 
 import Control.Monad (foldM)
 import Data.List (intercalate)
 
 import SchemeDoc.Types
-import SchemeDoc.SyntaxError
-import SchemeDoc.Include (expand)
+import SchemeDoc.Util
+import SchemeDoc.Error
 import SchemeDoc.Format.Types
+import SchemeDoc.Parser.R7RS
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
 data Library = Library { name    :: LibraryName
@@ -58,6 +60,27 @@ libName = show . name
 libExports :: Library -> String -> Bool
 libExports lib ident = any (\Export{internal=i} -> i == ident) $
                             exports lib
+
+-- Expand an include into a begin expression.
+--
+--  <includer> →
+--      | (include <string>+)
+--      | (include-ci <string>+)
+--
+expand :: Sexp -> IO Sexp
+expand (List ((Id "include-ci"):fileNames)) = expand' fileNames True
+expand (List ((Id "include"):fileNames)) = expand' fileNames False
+expand e = throwSyntax e "not an include expression"
+
+expand' :: [Sexp] -> Bool -> IO Sexp
+expand' fileNames lower = do
+    paths <- mapM (\case
+                    Str s -> pure $ if lower then foldcase s else s
+                    e     -> throwSyntax e "expected list of strings")
+             fileNames
+
+    exprs <- (mapM (parseFromFile scheme) paths)
+    pure $ List ([Id "begin"] ++ concat exprs)
 
 -- Expand the library declaration.
 -- Returns all begin blocks, including includer expressions as expanded begin blocks.
