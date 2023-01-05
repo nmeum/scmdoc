@@ -30,8 +30,9 @@ main' fileName =
    ( do
      source <- parseFromFile scheme fileName
      libs <- findDocLibs' source
-     _ <- mapM writeDoc libs
-     pure ()
+     if null libs
+         then hPutStrLn stderr "Warning: Found no documented define-library expression"
+         else mapM writeDoc libs >> pure ()
    )
    ( \case
      ErrSyntax (SyntaxError expr err) ->
