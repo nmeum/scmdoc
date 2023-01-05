@@ -20,7 +20,7 @@ data Library = Library { name    :: LibraryName
 instance Formatable Library where
     sid (Library{name=n}) = show n
     fmt (Library{name=n}) =
-        (\comment -> [ Heading H1 $ "Library " ++ (show n)
+        (\comment -> [ Heading H1 $ show n
                      , Paragraph comment ])
 
 -- Parse a Scheme library definition.
