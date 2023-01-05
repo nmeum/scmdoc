@@ -15,17 +15,16 @@ import SchemeDoc.Format.Library
 defFormatter :: Sexp -> Maybe (String, FormatS)
 defFormatter sexp = (mkConstant sexp >>= mkPair)
            <|> (mkProcedure sexp >>= mkPair)
+           -- TODO: Emit a warning if no formatter was found
     where
         mkPair :: Formatable a => a -> Maybe (String, FormatS)
         mkPair x = Just $ (sid x, fmt x)
 
 -- Format the given S-expression, if it is exported by the given library.
 runFormat :: Library -> Formatter -> Sexp -> Maybe FormatS
-runFormat lib f expr = case f expr of
-    Just (n, x) -> if libExports lib n
-                     then Just x
-                     else Nothing
-    Nothing     -> Just $ fmt expr -- TODO: Emit warning
+runFormat lib f expr = f expr >>= (\(n, x) -> if libExports lib n
+                                                then Just x
+                                                else Nothing)
 
 -- Format all documented S-expressions which are exported
 -- by the given Scheme library using the given Formatter.

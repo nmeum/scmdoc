@@ -14,13 +14,5 @@ class Formatable a where
     sid :: a -> String
     fmt :: a -> FormatS
 
--- The default formatter for S-expression this is only intended to
--- be used as a catch-all fallback formatter.
-instance Formatable Sexp where
-    sid _ = ""
-    fmt expr = (\comment -> [ Heading H2 "Expression"
-                              , Paragraph comment
-                              , CodeBlock $ show expr ])
-
 -- Type to convert an S-expression into a unique id and a formatter.
 type Formatter = Sexp -> Maybe (String, FormatS)
