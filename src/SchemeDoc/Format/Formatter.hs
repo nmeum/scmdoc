@@ -32,5 +32,5 @@ formatItem comment Formatted{objDesc=desc, objName=n, objExpr=e} = [
 
 -- Format all documented S-expressions using the given formatter.
 format :: Formatter -> [Documented] -> [Block String]
-format formatFn = concat . map (\(Documented comment expr) ->
+format formatFn = concat . map (\(comment, expr) ->
                                     formatItem comment (runFormat formatFn expr))
