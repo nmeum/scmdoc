@@ -3,20 +3,12 @@ module Main where
 import System.Exit
 import System.IO
 import System.Environment
-import Text.Parsec.String
 
 import SchemeDoc
 import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
 import SchemeDoc.Output
-
--- TODO: Reuse include parser
-parse :: Parser a -> String -> IO a
-parse p fileName = parseFromFile p fileName >>= either report return
-  where
-    report err = do
-        hPutStrLn stderr $ "Error: " ++ show err
-        exitFailure
+import SchemeDoc.Util (parseFromFile)
 
 writeDoc :: DocLib -> IO ()
 writeDoc lib = do
@@ -33,7 +25,7 @@ findDocLibs' exprs =
 
 main' :: String -> IO ()
 main' fileName = do
-    source <- parse scheme fileName
+    source <- parseFromFile scheme fileName
     libs <- findDocLibs' source
     _ <- mapM writeDoc libs
     pure ()
