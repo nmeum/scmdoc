@@ -20,11 +20,11 @@ common warnings
 library
     import:           warnings
     exposed-modules:  SchemeDoc
+                    , SchemeDoc.Types
+                    , SchemeDoc.SyntaxError
+                    , SchemeDoc.Include
                     , SchemeDoc.Parser.R7RS
                     , SchemeDoc.Parser.Util
-                    , SchemeDoc.Scheme.Library
-                    , SchemeDoc.Scheme.Includer
-                    , SchemeDoc.Scheme.Documented
                     , SchemeDoc.Documentation.AST
                     , SchemeDoc.Documentation.Markdown
                     , SchemeDoc.Format.Constant

@@ -4,8 +4,7 @@ where
 
 import Control.Applicative
 
-import SchemeDoc
-import SchemeDoc.Scheme.Documented
+import SchemeDoc.Types
 import SchemeDoc.Documentation.AST
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Procedure

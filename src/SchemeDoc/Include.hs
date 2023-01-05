@@ -1,7 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
-module SchemeDoc.Scheme.Includer (expand) where
+module SchemeDoc.Include (expand) where
 
-import SchemeDoc
+import SchemeDoc.Types
+import SchemeDoc.SyntaxError
 import SchemeDoc.Parser.R7RS
 
 import Data.Char (toLower)

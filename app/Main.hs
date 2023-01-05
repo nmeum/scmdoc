@@ -3,12 +3,12 @@ module Main where
 import System.Exit
 import System.IO
 import System.Environment
+import Text.Parsec.String
 
 import SchemeDoc
+import SchemeDoc.Types
 import SchemeDoc.Documentation.Markdown
-import SchemeDoc.Scheme.Library
 import SchemeDoc.Parser.R7RS
-import Text.Parsec.String
 
 -- TODO: Reuse include parser
 parse :: Parser a -> String -> IO a

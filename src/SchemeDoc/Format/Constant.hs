@@ -1,6 +1,6 @@
 module SchemeDoc.Format.Constant where
 
-import SchemeDoc
+import SchemeDoc.Types
 import SchemeDoc.Format.Types
 
 data Constant = Constant { consName  :: String

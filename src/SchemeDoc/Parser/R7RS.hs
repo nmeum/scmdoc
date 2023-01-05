@@ -1,6 +1,6 @@
 module SchemeDoc.Parser.R7RS (scheme) where
 
-import SchemeDoc
+import SchemeDoc.Types
 import SchemeDoc.Parser.Util
 
 import Data.Char

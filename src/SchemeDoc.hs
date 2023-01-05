@@ -1,50 +1,49 @@
-module SchemeDoc where
+module SchemeDoc
+    (DocLib, findDocLibs, docDecls, docFmt)
+where
 
-import Data.List (intercalate)
+import SchemeDoc.Types
+import SchemeDoc.SyntaxError
+import SchemeDoc.Format.Library
+import SchemeDoc.Format.Formatter
+import SchemeDoc.Documentation.AST
 
--- Algebraic data type representing Scheme S-Expressions.
-data Sexp = Str        String  -- "foo"
-          | Id         String  -- foo
-          | Symbol     String  -- 'foo
-          | Char       Char    -- #\f
-          | Boolean    Bool    -- #t
-          | List       [Sexp]  -- ["foo" "bar"]
-          | Number     Integer
-          | DocComment String
-    deriving (Eq)
+-- A documented Scheme library.
+type DocLib = (String, Library)
 
-instance Show Sexp where
-    show (Str s) = "\"" ++ s ++ "\"" -- TODO: Perform escaping
-    show (Id i) = i
-    show (Symbol s) = "'" ++ s
-    show (Char c) = "#\\" ++ [c]
-    show (Boolean b) = if b then "#t" else "#f"
-    show (List a) = "(" ++ (intercalate " " (map show a)) ++ ")"
-    show (Number n) = show n
-    show (DocComment c) = ";;> " ++ c ++ "\n"
+-- Find all documented Scheme library declarations in a Scheme source.
+findDocLibs :: [Sexp] -> Either SyntaxError [DocLib]
+findDocLibs exprs = foldr fn (Right []) (findDocumented exprs)
+    where
+        fn (s, e@(List ((Id "define-library"):_))) acc =
+            case mkLibrary e of
+                Right lib -> fmap ((:) (s, lib)) acc
+                Left err  -> Left err
+        fn _ acc = acc
 
--- Traverse a Scheme source, i.e. a list of S-expressions.
-walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b
-walk proc acc src = foldl (\a x -> case x of
-    List exprs -> walk proc (proc a x) exprs
-    expr       -> proc a expr) acc src
+-- Find all documented declarations of a library.
+-- Performs file system accesses to expand includes.
+docDecls :: DocLib -> IO [Documented]
+docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 
-------------------------------------------------------------------------
+-- Expand a documented library wrt. its declarations.
+docFmt :: DocLib -> [Documented] -> [Block String]
+docFmt (libDesc, lib) decls = [Heading H1 $ libName lib, Paragraph libDesc]
+    ++ format defFormatter decls
 
--- A syntax error occuring during processing of S-Expressions.
-data SyntaxError = SyntaxError Sexp String
-    deriving (Show, Eq)
+-- Filter all non-documented S-expressions.
+filterDocs :: [Sexp] -> [Sexp]
+filterDocs = snd . walk filterDocs' (False, [])
+    where
+        filterDocs' :: (Bool, [Sexp]) -> Sexp -> (Bool, [Sexp])
+        filterDocs' (False, acc) c@(DocComment _) = (True, acc ++ [c])
+        filterDocs' (True, acc) expr = (False, acc ++ [expr])
+        filterDocs' b _ = b
 
--- Helper function for creating a new syntax error.
-makeErr :: Sexp -> String -> Either SyntaxError a
-makeErr expr msg = Left $ SyntaxError expr msg
-
--- Approach:
---
---  1. Find all libraries
---  2. Within the libraries, expand the incldues
---  3. Filter out all S-expressions which are preceded by a doc-comment
---
---  4. Parse the doc-comments
---  5. Transform parsed doc-comments (e.g. into markdown)
---  6. For each: Write a file in the generated output language
+findDocumented :: [Sexp] -> [Documented]
+findDocumented = toPairLst . filterDocs
+    where
+        toPairLst :: [Sexp] -> [(Documented)]
+        toPairLst [] = []
+        toPairLst ((DocComment s):expr:xs) = (s, expr) : toPairLst xs
+        toPairLst _ = error "unreachable"

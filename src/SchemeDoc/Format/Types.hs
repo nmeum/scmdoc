@@ -2,7 +2,7 @@ module SchemeDoc.Format.Types
     (Formatted(..), Formatable(..), Formatter)
 where
 
-import SchemeDoc
+import SchemeDoc.Types
 
 -- A formatted S-expressions.
 data Formatted = Formatted { objDesc :: String -- e.g. procedure

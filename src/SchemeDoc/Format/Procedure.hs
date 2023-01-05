@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module SchemeDoc.Format.Procedure where
 
-import SchemeDoc
+import SchemeDoc.Types
 import SchemeDoc.Format.Types
 
 data Procedure = Procedure { name   :: String

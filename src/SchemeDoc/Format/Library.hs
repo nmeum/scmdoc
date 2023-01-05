@@ -3,9 +3,10 @@ module SchemeDoc.Format.Library where
 import Control.Monad (foldM)
 import Data.List (intercalate)
 
-import SchemeDoc
+import SchemeDoc.Types
+import SchemeDoc.SyntaxError
+import SchemeDoc.Include (expand)
 import SchemeDoc.Format.Types
-import SchemeDoc.Scheme.Includer
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
 data Library = Library { name    :: LibraryName
