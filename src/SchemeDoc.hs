@@ -4,6 +4,7 @@ where
 
 import SchemeDoc.Types
 import SchemeDoc.Error
+import SchemeDoc.Format.Types
 import SchemeDoc.Format.Library
 import SchemeDoc.Format.Formatter
 import SchemeDoc.Output
@@ -28,8 +29,8 @@ docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 
 -- Expand a documented library wrt. its declarations.
 docFmt :: DocLib -> [Documented] -> [Block String]
-docFmt (libDesc, lib) decls = [Heading H1 $ libName lib, Paragraph libDesc]
-    ++ format defFormatter decls
+docFmt (libDesc, lib) decls =
+    ((fmt lib) libDesc) ++ format defFormatter decls
 
 -- Filter all non-documented S-expressions.
 filterDocs :: [Sexp] -> [Sexp]

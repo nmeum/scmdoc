@@ -1,6 +1,7 @@
 module SchemeDoc.Format.Constant where
 
 import SchemeDoc.Types
+import SchemeDoc.Output
 import SchemeDoc.Format.Types
 
 data Constant = Constant { consName  :: String
@@ -8,7 +9,9 @@ data Constant = Constant { consName  :: String
     deriving (Show)
 
 instance Formatable Constant where
-    fmt (Constant n _) = Formatted "constant" n $ Id n
+    fmt (Constant n _) = (\comment -> [ Heading H2 $ "Constant " ++ n
+                                      , Paragraph comment
+                                      , CodeBlock $ show (Id n) ])
 
 -- Parses a Scheme definition.
 --

@@ -2,6 +2,7 @@
 module SchemeDoc.Format.Procedure where
 
 import SchemeDoc.Types
+import SchemeDoc.Output
 import SchemeDoc.Format.Types
 
 data Procedure = Procedure { name   :: String
@@ -11,7 +12,9 @@ data Procedure = Procedure { name   :: String
 
 instance Formatable Procedure where
     fmt (Procedure{name=n, params=p}) =
-        Formatted "procedure" n $ List ([Id n] ++ map Id p)
+        (\comment -> [ Heading H2 $ "Procedure " ++ n
+                     , Paragraph comment
+                     , CodeBlock $ show $ List ([Id n] ++ map Id p)])
 
 -- Parses a Scheme procedure definition.
 --

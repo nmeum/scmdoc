@@ -5,6 +5,7 @@ import Control.Monad (foldM)
 import Data.List (intercalate)
 
 import SchemeDoc.Types
+import SchemeDoc.Output
 import SchemeDoc.Util
 import SchemeDoc.Error
 import SchemeDoc.Format.Types
@@ -17,8 +18,9 @@ data Library = Library { name    :: LibraryName
     deriving (Show)
 
 instance Formatable Library where
-    fmt (Library{name=n, exports=e}) =
-        Formatted "library" (show n) $ List ([Id "exports"] ++ map (\Export{external=x} -> Id x) e)
+    fmt (Library{name=n}) =
+        (\comment -> [ Heading H1 $ "Library " ++ (show n)
+                     , Paragraph comment ])
 
 -- Parse a Scheme library definition.
 --
