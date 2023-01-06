@@ -1,5 +1,6 @@
 module SchemeDoc.Types where
 
+import Data.Complex
 import Data.List (intercalate)
 
 -- A documented S-expression
@@ -13,6 +14,9 @@ data Sexp = Str        String  -- "foo"
           | Boolean    Bool    -- #t
           | List       [Sexp]  -- ["foo" "bar"]
           | Number     Integer
+          | Float      Double
+          | Complex    (Complex Double)
+          | Rational   Rational
           | DocComment String
     deriving (Eq)
 
@@ -24,6 +28,9 @@ instance Show Sexp where
     show (Boolean b) = if b then "#t" else "#f"
     show (List a) = "(" ++ (intercalate " " (map show a)) ++ ")"
     show (Number n) = show n
+    show (Float n) = show n
+    show (Complex n) = show n
+    show (Rational n) = show n
     show (DocComment c) = ";;> " ++ c ++ "\n"
 
 -- Traverse a Scheme source, i.e. a list of S-expressions.

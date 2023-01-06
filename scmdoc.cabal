@@ -25,6 +25,7 @@ library
                     , SchemeDoc.Error
                     , SchemeDoc.Util
                     , SchemeDoc.Parser.R7RS
+                    , SchemeDoc.Parser.Number
                     , SchemeDoc.Parser.Util
                     , SchemeDoc.Format.Constant
                     , SchemeDoc.Format.Formatter

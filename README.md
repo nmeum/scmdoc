@@ -119,9 +119,8 @@ This file can then be processed further with a suitable Markdown implementation 
 
 ## License
 
-This program is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.
+Furthermore, this code presently includes the Scheme number parser from [Husk Scheme][husk-scheme github] which is licensed under MIT.
 
 [chicken web]: https://call-cc.org
 [guile web]: https://www.gnu.org/software/guile/
@@ -130,3 +129,4 @@ Free Software Foundation.
 [chibi-doc source]: https://github.com/ashinn/chibi-scheme/blob/master/tools/chibi-doc
 [pandoc web]: https://pandoc.org/
 [discount web]: http://www.pell.portland.or.us/~orc/Code/discount/
+[husk-scheme github]: https://raw.githubusercontent.com/justinethier/husk-scheme

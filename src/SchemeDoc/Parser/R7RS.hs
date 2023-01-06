@@ -2,6 +2,7 @@ module SchemeDoc.Parser.R7RS (scheme) where
 
 import SchemeDoc.Types
 import SchemeDoc.Parser.Util
+import SchemeDoc.Parser.Number
 
 import Data.Char
 
@@ -221,10 +222,6 @@ character = fmap Char $
 string :: Parser Sexp
 string = fmap Str $
     between (char '"') (char '"') (filterJust <$> many stringElement)
-
--- XXX: Dummy parser, add the real thing later.
-number :: Parser Sexp
-number = fmap (Number . read) $ many1 digit
 
 -- Parse a list of S-expressions.
 sexprs :: Parser [Sexp]
