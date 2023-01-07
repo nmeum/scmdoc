@@ -1,6 +1,5 @@
 module Util where
 
-import SchemeDoc
 import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
 import qualified Text.ParserCombinators.Parsec as P

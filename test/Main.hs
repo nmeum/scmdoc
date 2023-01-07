@@ -1,6 +1,6 @@
 import Test.Tasty
 
-import SchemeParser
+import Parser
 import Library
 
 main :: IO ()
