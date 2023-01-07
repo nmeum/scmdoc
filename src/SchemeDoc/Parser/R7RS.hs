@@ -182,6 +182,58 @@ docComment :: Parser Sexp
 docComment = fmap (DocComment . ltrim . concat) $
     (many1 $ P.string ";;>" >> manyTill anyChar endOfLine)
 
+-- Sign subsequent for peculiar identifier.
+--
+--  <sign subsequent> → <initial> | <explicit sign> | @
+--
+signSubsequent :: Parser String
+signSubsequent = do
+    first <- initial
+    sign  <- explicitSign
+    ch    <- char '@'
+    return [first, sign, ch]
+
+-- Dot subsequent for peculiar identifier.
+--
+--   | . <dot subsequent> <subsequent>*
+--
+dotSubsequent :: Parser String
+dotSubsequent = do
+    first <- char '.'
+    subsq <- many subsequent
+    return (first : subsq)
+
+-- Peculiar identifier.
+--
+--  <peculiar identifier> → <explicit sign>
+--      | <explicit sign> <sign subsequent> <subsequent>*
+--      | <explicit sign> . <dot subsequent> <subsequent>*
+--      | . <dot subsequent> <subsequent>*
+--
+peculiarIdentifier :: Parser String
+peculiarIdentifier = fmap (\x -> [x]) (try explicitSign)
+                 <|> try
+                  (do
+                    sign <- explicitSign
+                    ssub <- signSubsequent
+                    sub  <- many subsequent
+                    return ([sign] ++ ssub ++ sub)
+                  )
+                 <|> try
+                  (do
+                    sign <- explicitSign
+                    dsub <- dotSubsequent
+                    sub  <- many subsequent
+                    return ([sign] ++ dsub ++ sub)
+                  )
+                 <|> try
+                  (do
+                    dot  <- char '.'
+                    dsub <- dotSubsequent
+                    sub  <- many subsequent
+                    return ([dot] ++ dsub ++ sub)
+                  )
+
 -- Scheme identifier or symbol.
 --
 --  <identifier> → <initial> <subsequent>*
@@ -192,7 +244,7 @@ identifier :: Parser Sexp
 identifier = fmap Id $
     (initial >>= (\i -> fmap ((:) i) $ many subsequent))
         <|> between (char '|') (char '|') (many symbolElement)
-        -- TODO: peculiar identifier
+        <|> peculiarIdentifier
 
 -- Scheme boolean
 --

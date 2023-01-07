@@ -33,6 +33,13 @@ idParser = testGroup "Identifier parser"
 
     , testCase "Identifier with mnemonic escape" $ do
         assertEqual "" (Right $ [Id "b\ar"]) $ parse "|b\\ar|"
+
+    , testCase "Peculiar Identifiers" $ do
+        assertEqual "" (Right $ [Id "+"]) $ parse "+"
+        assertEqual "" (Right $ [Id "-"]) $ parse "-"
+        assertEqual "" (Right $ [Id "+@2"]) $ parse "+@2"
+        assertEqual "" (Right $ [Id "+..22342"]) $ parse "+..22342"
+        assertEqual "" (Right $ [Id "..."]) $ parse "..."
     ]
 
 strParser :: TestTree
