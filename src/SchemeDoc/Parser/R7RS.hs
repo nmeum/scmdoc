@@ -226,6 +226,24 @@ string = fmap Str $
 number :: Parser Sexp
 number = fmap (Number . read) $ many1 digit
 
+-- Parse a list of S-expressions.
+sexprs :: Parser [Sexp]
+sexprs = many sexp
+
+-- Parse a list, e.g. (1 2 3).
+list :: Parser Sexp
+list = fmap List $ between (char '(') (char ')') sexprs
+
+-- Parse syntatic sugar for vectors, e.g. `#(1 2 3)`.
+vector :: Parser Sexp
+vector = fmap (\lst -> List $ Id "vector" : lst) $
+    between (P.string "#(") (P.char ')') sexprs
+
+-- Parse syntatic sugar for bytevectors, e.g. `#u8(1 2 3)`.
+bytevector :: Parser Sexp
+bytevector = fmap (\lst -> List $ Id "bytevector" : lst) $
+    between (P.string "#u8(") (P.char ')') sexprs
+
 -- Parse an S-Expression without lexing or delimiter handling
 -- according to the tokens defined in the R⁷RS formal syntax:
 --
@@ -239,23 +257,19 @@ sexp' = identifier
         <|> character
         <|> number
         <|> string
-        <|> (between (char '(') (char ')') list)
+        <|> list
         <|> docComment
         -- Boolean, comments, and {bit,}vectors all start with
         -- a `#` character and thus require backtracking.
         <|> try boolean
-        -- XXX: Treat vector and bytevector as list for now
-        <|> try (between (P.string "#(") (P.char ')') list)
-        <|> between (P.string "#u8(") (P.char ')') list
+        <|> try vector
+        <|> bytevector
         -- XXX: Quotation tokens are ignored for now
         <|> (char '\'' >> sexp)
         <|> (char '`'  >> sexp)
         <|> ((P.string ",@" <|> P.string ",") >> sexp)
         -- TODO: Dotted pairs and dotted lists
         -- TODO: Directive (#!fold-case, …)
-    where
-        list :: Parser Sexp
-        list = fmap List $ many sexp
 
 -- Parse an s-expression with lexing and delimiter checking.
 sexp :: Parser Sexp
