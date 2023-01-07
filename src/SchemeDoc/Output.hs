@@ -27,7 +27,7 @@ headingPrefix (H3) = "###"
 toMarkdown :: Block String -> String
 toMarkdown (Paragraph p) = p ++ "\n"
 toMarkdown (CodeBlock c) = intercalate "\n" $ map ((++) "\t") $ lines c
-toMarkdown (Listing lst) = intercalate "\n" $ map ((++) "* ") lst
+toMarkdown (Listing lst) = (intercalate "\n" $ map ((++) "* ") lst) ++ "\n"
 toMarkdown (Heading l s) = (headingPrefix l) ++ " " ++ s
 
 mkMarkdown :: [Block String] -> String
