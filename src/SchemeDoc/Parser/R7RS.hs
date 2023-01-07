@@ -337,8 +337,13 @@ scheme = manyTill sexp (try $ lexeme eof)
 -- and not at the end. Instead, spaces should be removed at
 -- the end by lexeme though this interferes with delimiter.
 
--- Strip whitespaces and comments between tokens.
-lexeme :: Parser a -> Parser a
-lexeme p = (skip spaces >> optional (try comment >> spaces)) >> p
 -- “Comments are treated exactly like whitespace.”
 -- Comments require backtracking for docComment parser.
+lexComment :: Parser a -> Parser a
+lexComment p = lexComment' >> p
+  where
+    lexComment' = skipMany ((try comment) >> spaces)
+
+-- Strip whitespaces and comments between tokens.
+lexeme :: Parser a -> Parser a
+lexeme p = spaces >> lexComment p
