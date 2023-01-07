@@ -164,4 +164,9 @@ exprParser = testGroup "Expression parser"
             "Whitespaces at end"
             (Right $ [Number 42])
             $ parse "42 "
+
+        assertEqual
+            "Trailing space in list"
+            (Right $ [List [Id "define", Id "x", Number 0]])
+            $ parse "(define x 0 )"
     ]

@@ -275,23 +275,19 @@ string :: Parser Sexp
 string = fmap Str $
     between (char '"') (char '"') (filterJust <$> many stringElement)
 
--- Parse a list of S-expressions.
-sexprs :: Parser [Sexp]
-sexprs = many sexp
-
 -- Parse a list, e.g. (1 2 3).
 list :: Parser Sexp
-list = fmap List $ between (char '(') (char ')') sexprs
+list = fmap List $ char '(' >> (manyTill sexp (try $ lexeme $ char ')'))
 
 -- Parse syntatic sugar for vectors, e.g. `#(1 2 3)`.
 vector :: Parser Sexp
 vector = fmap (\lst -> List $ Id "vector" : lst) $
-    between (P.string "#(") (P.char ')') sexprs
+    P.string "#(" >> (manyTill sexp (try $ lexeme $ char ')'))
 
 -- Parse syntatic sugar for bytevectors, e.g. `#u8(1 2 3)`.
 bytevector :: Parser Sexp
 bytevector = fmap (\lst -> List $ Id "bytevector" : lst) $
-    between (P.string "#u8(") (P.char ')') sexprs
+    P.string "#u8(" >> (manyTill sexp (try $ lexeme $ char ')'))
 
 -- Parse an S-Expression without lexing or delimiter handling
 -- according to the tokens defined in the R⁷RS formal syntax:
