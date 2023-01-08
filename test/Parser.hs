@@ -55,6 +55,9 @@ strParser = testGroup "String parser"
 
     , testCase "String with inline hex escape" $ do
         assertEqual "" (Right $ [Str "Hello"]) $ parse "\"H\\x65;llo\""
+
+    , testCase "String with mnemonic escape" $ do
+        assertEqual "" (Right $ [Str "\n"]) $ parse "\"\\n\""
     ]
 
 chrParser :: TestTree
