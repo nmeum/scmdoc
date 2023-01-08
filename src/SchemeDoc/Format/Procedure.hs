@@ -13,7 +13,7 @@ data Procedure = Procedure { name   :: String
 instance Formatable Procedure where
     sid (Procedure{name=n}) = n
     fmt (Procedure{name=n, params=p}) =
-        (\comment -> [ Heading H2 $ "Procedure " ++ n
+        (\comment -> [ Heading H3 $ "procedure " ++ n
                      , Paragraph comment
                      , CodeBlock $ show $ List ([Id n] ++ map Id p)])
 

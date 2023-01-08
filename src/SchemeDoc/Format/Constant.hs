@@ -10,7 +10,7 @@ data Constant = Constant { consName  :: String
 
 instance Formatable Constant where
     sid (Constant n _) = n
-    fmt (Constant n _) = (\comment -> [ Heading H2 $ "Constant " ++ n
+    fmt (Constant n _) = (\comment -> [ Heading H3 $ "constant " ++ n
                                       , Paragraph comment
                                       , CodeBlock $ show (Id n) ])
 
