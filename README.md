@@ -103,19 +103,14 @@ This file can then be processed further with a suitable Markdown implementation 
 
 ## Related Work
 
-* SchemeDoc / …
-* https://ctan.org/pkg/schemeweb
-* STOL: https://doi.org/10.1145/382126.382663
-* Literate Programming from Scheme To TeX
-    * lisp2tex progam
-    * https://www.cs.cmu.edu/Groups/AI/lang/scheme/util/lisp2tex/
-    * Further Development: https://christian.queinnec.org/WWW/l2t.html
-* MOLE: http://www.schemeworkshop.org/2001/lisovsky.pdf
-* https://orgmode.org/manual/Extracting-Source-Code.html
-* chibi-doc
-* racket scribble
-* CHICKEN Hahn
-* …
+A loose, incomplete collection of similar work on the documentation of Scheme code:
+
+* [Scribble][scribble web]: The documentation tool used by the Racket programming language
+* [chibi-doc][chibi-doc source]: The documentation tool used by chibi-scheme (inspired by Scribble)
+* [SchemeDoc][schemedoc web]: Extract documentation from Scheme comments using [LAML][laml web]
+* MOLE: [Scheme Program Source Code as a Semistructured Data][mole paper]
+* [`l2t`][l2t web] (aka. LiSP2TeX): A literate programming utility for inserting Scheme into TeX files
+* [schemeweb][schemeweb ctan]: Simple literate programming for Scheme with LaTeX
 
 ## License
 
@@ -130,3 +125,9 @@ Furthermore, this code presently includes the Scheme number parser from [Husk Sc
 [pandoc web]: https://pandoc.org/
 [discount web]: http://www.pell.portland.or.us/~orc/Code/discount/
 [husk-scheme github]: https://raw.githubusercontent.com/justinethier/husk-scheme
+[schemedoc web]: https://people.cs.aau.dk/~normark/schemedoc/
+[schemeweb ctan]: https://ctan.org/pkg/schemeweb
+[mole paper]: http://www.schemeworkshop.org/2001/lisovsky.pdf
+[laml web]: http://people.cs.aau.dk/~normark/laml-distributions/laml/
+[l2t web]: https://christian.queinnec.org/WWW/l2t.html
+[scribble web]: https://docs.racket-lang.org/scribble/index.html
