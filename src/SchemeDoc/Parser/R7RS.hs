@@ -299,7 +299,6 @@ bytevector = fmap (\lst -> List $ Id "bytevector" : lst) $
 --  <token> → <identifier> | <boolean> | <number>
 --      | <character> | <string>
 --      | ( | ) | #( | #u8( | ’ | ` | , | ,@ | .
---      <delimiter> → <whitespace> | <vertical line>
 --
 sexp' :: Parser Sexp
 sexp' = identifier
