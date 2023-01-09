@@ -316,7 +316,8 @@ sexp' = identifier
         -- XXX: Quotation tokens are ignored for now
         <|> ((lexeme $ char '\'') >> sexp)
         <|> ((lexeme $ char '`')  >> sexp)
-        <|> ((P.string ",@" <|> P.string ",") >> sexp)
+        <|> ((lexeme $ try $ P.string ",@") >> sexp)
+        <|> ((lexeme $ P.string ",") >> sexp)
         -- TODO: Directive (#!fold-case, …)
 
 -- Parse an s-expression with lexing and delimiter checking.
