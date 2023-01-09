@@ -280,17 +280,18 @@ string = fmap Str $
 
 -- Parse a list, e.g. (1 2 3).
 list :: Parser Sexp
-list = fmap List $ char '(' >> (manyTill sexp (try $ lexeme $ char ')'))
+list = fmap List $
+    between (lexeme $ char '(') (char ')') (many sexp)
 
 -- Parse syntatic sugar for vectors, e.g. `#(1 2 3)`.
 vector :: Parser Sexp
 vector = fmap (\lst -> List $ Id "vector" : lst) $
-    P.string "#(" >> (manyTill sexp (try $ lexeme $ char ')'))
+    between (lexeme $ P.string "#(") (char ')') (many sexp)
 
 -- Parse syntatic sugar for bytevectors, e.g. `#u8(1 2 3)`.
 bytevector :: Parser Sexp
 bytevector = fmap (\lst -> List $ Id "bytevector" : lst) $
-    P.string "#u8(" >> (manyTill sexp (try $ lexeme $ char ')'))
+    between (lexeme $ P.string "#u8(") (char ')') (many sexp)
 
 -- Parse an S-Expression without lexing or delimiter handling
 -- according to the tokens defined in the R⁷RS formal syntax:
@@ -313,36 +314,34 @@ sexp' = identifier
         <|> try vector
         <|> bytevector
         -- XXX: Quotation tokens are ignored for now
-        <|> (char '\'' >> sexp)
-        <|> (char '`'  >> sexp)
+        <|> ((lexeme $ char '\'') >> sexp)
+        <|> ((lexeme $ char '`')  >> sexp)
         <|> ((P.string ",@" <|> P.string ",") >> sexp)
-        -- TODO: Dotted pairs and dotted lists
         -- TODO: Directive (#!fold-case, …)
 
 -- Parse an s-expression with lexing and delimiter checking.
 sexp :: Parser Sexp
-sexp = terminatedBy (lexeme sexp') (lookAhead (delim <|> eof))
+sexp = lexeme $ terminatedBy sexp' (lookAhead (delim <|> eof))
     where
         delim :: Parser ()
         delim = (delimiter <|> (skip $ P.string "#|") <|> eof) <?> "delimiter"
 
--- Parse an R⁷RS Scheme program.
-scheme :: Parser [Sexp]
-scheme = manyTill sexp (try $ lexeme eof)
--- TODO: Restructure to remove backtracking in manyTill.
--- This is needed because in the case of trailing whitespaces
--- the sexp parser will see the space and assume that a valid
--- token follows is since lexeme removes spaces at the start
--- and not at the end. Instead, spaces should be removed at
--- the end by lexeme though this interferes with delimiter.
-
 -- “Comments are treated exactly like whitespace.”
 -- Comments require backtracking for docComment parser.
-lexComment :: Parser a -> Parser a
-lexComment p = lexComment' >> p
-  where
-    lexComment' = skipMany ((try comment) >> spaces)
+lexComment :: Parser ()
+lexComment = skipMany ((try comment) >> spaces)
 
 -- Strip whitespaces and comments between tokens.
 lexeme :: Parser a -> Parser a
-lexeme p = spaces >> lexComment p
+lexeme p = do
+    r <- p
+    _ <- spaces
+    _ <- lexComment
+    return r
+
+-- Parse an R⁷RS Scheme program.
+scheme :: Parser [Sexp]
+scheme = do
+    _ <- spaces
+    _ <- lexComment
+    manyTill sexp (lexeme eof)

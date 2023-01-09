@@ -87,10 +87,12 @@ vectorParser :: TestTree
 vectorParser = testGroup "Vector and bytevector parser"
     [ testCase "Vector" $ do
         assertEqual "" (Right $ [List [Id "vector", Number 1, Number 2]]) $ parse "#(1 2)"
+        assertEqual "" (Right $ [List [Id "vector", Number 1, Number 2]]) $ parse "#(   1     2  )"
         assertEqual "" (Right $ [List [Id "vector", Number 1, Number 2]]) $ parse "(vector 1 2)"
 
     , testCase "Bytevector" $ do
         assertEqual "" (Right $ [List [Id "bytevector", Number 1, Number 2]]) $ parse "#u8(1 2)"
+        assertEqual "" (Right $ [List [Id "bytevector", Number 1, Number 2]]) $ parse "#u8(   1    2  ) "
         assertEqual "" (Right $ [List [Id "bytevector", Number 1, Number 2]]) $ parse "(bytevector 1 2)"
     ]
 
@@ -130,6 +132,11 @@ exprParser = testGroup "Expression parser"
             "Quote empty list with whitespaces"
             (Right $ [List []])
             $ parse "'  ()"
+
+        assertEqual
+            "Quasiquotation"
+            (Right $ [List [Id "foo"]])
+            $ parse "`   (foo)"
 
     , testCase "Miscellaneous" $ do
         assertEqual
