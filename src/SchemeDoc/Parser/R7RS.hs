@@ -99,11 +99,14 @@ symbolElement = noneOf "\\|"
 --  <mnemonic escape> → \a | \b | \t | \n | \r
 --
 mnemonicEsc :: Parser Char
-mnemonicEsc = try (bind "\\a" '\a') -- alarm
-          <|> try (bind "\\b" '\b') -- backspace
-          <|> try (bind "\\t" '\t') -- character tabulation
-          <|> try (bind "\\n" '\n') -- linefeed
-          <|> try (bind "\\r" '\r') -- return
+mnemonicEsc = char '\\' >>
+          (
+               bind "a" '\a' -- alarm
+           <|> bind "b" '\b' -- backspace
+           <|> bind "t" '\t' -- character tabulation
+           <|> bind "n" '\n' -- linefeed
+           <|> bind "r" '\r' -- return
+          )
 
 -- Parse a character in a string, including escape sequences.
 -- Returns Nothing for escaped newlines.
