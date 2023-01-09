@@ -4,6 +4,8 @@ module Main where
 import System.Exit
 import System.IO
 import System.Environment
+import System.FilePath
+import System.Directory
 import Control.Exception
 
 import SchemeDoc
@@ -29,6 +31,10 @@ main' fileName =
   catch
    ( do
      source <- parseFromFile scheme fileName
+
+     -- Expand all includes relative to given Scheme file.
+     setCurrentDirectory $ takeDirectory fileName
+
      libs <- findDocLibs' source
      if null libs
          then hPutStrLn stderr "Warning: Found no documented define-library expression"
