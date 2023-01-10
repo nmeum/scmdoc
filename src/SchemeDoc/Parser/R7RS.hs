@@ -293,6 +293,26 @@ bytevector :: Parser Sexp
 bytevector = fmap (\lst -> List $ Id "bytevector" : lst) $
     between (lexeme $ P.string "#u8(") (char ')') (many sexp)
 
+-- -- Parse syntatic sugor for quotations, e.g. `'foo`.
+quote :: Parser Sexp
+quote = fmap (\datum -> List [(Id "quote"), datum]) $
+    (lexeme $ char '\'') >> sexp
+
+-- Parse syntatic sugar for quasiquotations, e.g. ``foo`.
+quasiquotation :: Parser Sexp
+quasiquotation = fmap (\e -> List [(Id "quasiquote"), e]) $
+    (lexeme $ try $ char '`') >> sexp
+
+-- Parse syntatic sugor for unquote, e.g. `,foo`.
+unquote :: Parser Sexp
+unquote = fmap (\e -> List [(Id "unquote"), e]) $
+    (lexeme $ char ',') >> sexp
+
+-- Parse syntatic sugar for unquote-splicing, e.g. `,@foo`.
+unquoteSplicing :: Parser Sexp
+unquoteSplicing = fmap (\e -> List [(Id "unquote-splicing"), e]) $
+    (lexeme $ P.string ",@") >> sexp
+
 -- Parse an S-Expression without lexing or delimiter handling
 -- according to the tokens defined in the R⁷RS formal syntax:
 --
@@ -313,10 +333,10 @@ sexp' = identifier
         <|> try vector
         <|> bytevector
         -- XXX: Quotation tokens are ignored for now
-        <|> ((lexeme $ char '\'') >> sexp)
-        <|> ((lexeme $ char '`')  >> sexp)
-        <|> ((lexeme $ try $ P.string ",@") >> sexp)
-        <|> ((lexeme $ P.string ",") >> sexp)
+        <|> quote
+        <|> quasiquotation
+        <|> try unquoteSplicing
+        <|> unquote
         -- TODO: Directive (#!fold-case, …)
 
 -- Parse an s-expression with lexing and delimiter checking.
@@ -345,3 +365,4 @@ scheme = do
     _ <- spaces
     _ <- lexComment
     manyTill sexp (lexeme eof)
+-- TODO: Don't dupilcate lexeme here

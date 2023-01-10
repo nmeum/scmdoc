@@ -120,32 +120,32 @@ exprParser = testGroup "Expression parser"
     , testCase "Quotations" $ do
         assertEqual
             "Quote identifier"
-            (Right $ [Id "foobar"])
+            (Right $ [List [Id "quote", Id "foobar"]])
             $ parse "'foobar"
 
         assertEqual
             "Quote empty list"
-            (Right $ [List []])
+            (Right $ [List [Id "quote", List []]])
             $ parse "'()"
 
         assertEqual
             "Quote empty list with whitespaces"
-            (Right $ [List []])
+            (Right $ [List [Id "quote", List []]])
             $ parse "'  ()"
 
         assertEqual
             "Quasiquotation"
-            (Right $ [List [Id "foo"]])
+            (Right $ [List [Id "quasiquote", List [Id "foo"]]])
             $ parse "`   (foo)"
 
         assertEqual
             "Unquote"
-            (Right $ [List [Id "foo"]])
+            (Right $ [List [Id "unquote", List [Id "foo"]]])
             $ parse ", (foo)"
 
         assertEqual
             "Unquote splicing"
-            (Right $ [List [Id "foo"]])
+            (Right $ [List [Id "unquote-splicing", List [Id "foo"]]])
             $ parse ",@  (foo)"
 
     , testCase "Miscellaneous" $ do
