@@ -364,5 +364,5 @@ scheme :: Parser [Sexp]
 scheme = do
     _ <- spaces
     _ <- lexComment
-    manyTill sexp (lexeme eof)
+    manyTill sexp eof
 -- TODO: Don't dupilcate lexeme here
