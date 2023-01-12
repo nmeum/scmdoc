@@ -9,10 +9,10 @@ data Constant = Constant { consName  :: String
     deriving (Show)
 
 instance Formatable Constant where
-    sid (Constant n _) = n
-    fmt (Constant n _) = (\comment -> [ Heading H3 $ "constant " ++ n
-                                      , Paragraph comment
-                                      , CodeBlock $ show (Id n) ])
+    fmt (Constant n _) = Format n
+        (\comment -> [ Heading H3 $ "constant " ++ n
+                     , Paragraph comment
+                     , CodeBlock $ show (Id n) ])
 
 -- Parses a Scheme definition.
 --

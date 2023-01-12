@@ -30,7 +30,7 @@ docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 -- Expand a documented library wrt. its declarations.
 docFmt :: DocLib -> [Documented] -> [Block String]
 docFmt (libDesc, lib) decls =
-    ((fmt lib) libDesc) ++ [Heading H2 "Declarations"] ++ format lib defFormatter decls
+    (fmtFunc (fmt lib) $ libDesc) ++ [Heading H2 "Declarations"] ++ format lib defFormatter decls
 
 -- Filter all non-documented S-expressions.
 filterDocs :: [Sexp] -> [Sexp]

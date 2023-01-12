@@ -11,8 +11,7 @@ data Procedure = Procedure { name   :: String
     deriving (Show)
 
 instance Formatable Procedure where
-    sid (Procedure{name=n}) = n
-    fmt (Procedure{name=n, params=p}) =
+    fmt (Procedure{name=n, params=p}) = Format n
         (\comment -> [ Heading H3 $ "procedure " ++ n
                      , Paragraph comment
                      , CodeBlock $ show $ List ([Id n] ++ map Id p)])
