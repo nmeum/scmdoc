@@ -12,13 +12,18 @@ import SchemeDoc
 import SchemeDoc.Error
 import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
-import SchemeDoc.Output
+import SchemeDoc.Format.Library
 import SchemeDoc.Util (parseFromFile)
 
+-- Stylesheet to use for the generated HTML document.
+-- TODO: Make this configurable.
+stylesheet :: String
+stylesheet = "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css"
+
 writeDoc :: DocLib -> IO ()
-writeDoc lib = do
-    decls <- docDecls lib
-    putStrLn $ mkMarkdown (docFmt lib decls)
+writeDoc docLib@(_, lib) = do
+    decls <- docDecls docLib
+    putStrLn $ mkDoc (libName lib) stylesheet (docFmt docLib decls)
 
 findDocLibs' :: [Sexp] -> IO ([DocLib])
 findDocLibs' exprs =

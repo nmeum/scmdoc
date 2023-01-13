@@ -2,8 +2,11 @@
 module SchemeDoc.Format.Procedure where
 
 import SchemeDoc.Types
-import SchemeDoc.Output
 import SchemeDoc.Format.Types
+import SchemeDoc.Format.Util
+
+import Text.Blaze.Html
+import qualified Text.Blaze.Html5 as H
 
 data Procedure = Procedure { name   :: String
                            , params :: [String]
@@ -12,9 +15,10 @@ data Procedure = Procedure { name   :: String
 
 instance Formatable Procedure where
     fmt (Procedure{name=n, params=p}) = Format n
-        (\comment -> [ Heading H3 $ "procedure " ++ n
-                     , Paragraph comment
-                     , CodeBlock $ show $ List ([Id n] ++ map Id p)])
+        (\comment -> do
+                        component "procedure" n
+                        H.p $ toHtml comment
+                        htmlSexp $ List ([Id n] ++ map Id p))
 
 -- Parses a Scheme procedure definition.
 --

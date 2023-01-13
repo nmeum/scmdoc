@@ -3,9 +3,10 @@ module SchemeDoc.Format.Formatter
 where
 
 import Control.Applicative
+import Text.Blaze.Html
+import Text.Blaze.Internal (MarkupM(Append))
 
 import SchemeDoc.Types
-import SchemeDoc.Output
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Procedure
 import SchemeDoc.Format.Constant
@@ -24,8 +25,8 @@ runFormat lib f expr = f expr >>= (\(Format i fn) -> if libExports lib i
 
 -- Format all documented S-expressions which are exported
 -- by the given Scheme library using the given Formatter.
-format :: Library -> Formatter -> [Documented] -> [Block String]
+format :: Library -> Formatter -> [Documented] -> Html
 format lib formatFn = foldl (\acc (comment, expr) ->
                                 case runFormat lib formatFn expr of
-                                    Just f  -> acc ++ (f comment)
-                                    Nothing -> acc) []
+                                    Just f  -> Append acc (f comment)
+                                    Nothing -> acc) (toHtml "")

@@ -3,11 +3,11 @@ module SchemeDoc.Format.Types
 where
 
 import SchemeDoc.Types
-import SchemeDoc.Output
+import Text.Blaze.Html
 
 -- A function for formatting an S-expressions.
 -- Receives the documentation comment for the expression as an input.
-type FormatF = (String -> [Block String])
+type FormatF = (String -> Html)
 
 -- A Scheme expression prepared for formatting.
 data Format = Format { fmtId   :: String

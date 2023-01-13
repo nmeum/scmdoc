@@ -5,11 +5,13 @@ import Control.Monad (foldM)
 import Data.List (intercalate)
 
 import SchemeDoc.Types
-import SchemeDoc.Output
 import SchemeDoc.Util
 import SchemeDoc.Error
 import SchemeDoc.Format.Types
 import SchemeDoc.Parser.R7RS
+
+import Text.Blaze.Html
+import qualified Text.Blaze.Html5 as H
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
 data Library = Library { name    :: LibraryName
@@ -19,8 +21,9 @@ data Library = Library { name    :: LibraryName
 
 instance Formatable Library where
     fmt (Library{name=n}) = Format (show n)
-        (\comment -> [ Heading H1 $ show n
-                     , Paragraph comment ])
+        (\comment -> do
+                        H.h1 $ toHtml (show n)
+                        H.p $ toHtml comment)
 
 -- Parse a Scheme library definition.
 --

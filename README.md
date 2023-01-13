@@ -10,9 +10,9 @@ In its essence, `scmdoc` is therefore a glorified pattern matcher for S-expressi
 ## Status
 
 This is currently a proof-of-concept.
-The R7RS parser is incomplete and only parses small programs successfully.
+The R7RS parser should support the majority of the standard but is not well tested.
 Furthermore, only a very limited subset of R7RS expressions is matched at the moment (procedure definitions, constant definitions, library declarations).
-Lastly, a preliminary Markdown generator is available but is lacking many features.
+Lastly, a preliminary HTML generation backend is available.
 
 ## Installation
 
@@ -57,9 +57,9 @@ In the future, it should be possible to also supply custom formatters to, for ex
 
 ## Usage Example
 
-The `scmdoc` tool generates Markdown from a Scheme input defining a R7RS library.
+The `scmdoc` tool generates HTML from a Scheme input defining a R7RS library.
 As described above, only documented S-expressions for which a documentation formatter is available are included in the generated documentation.
-In order to demonstrate generation of Markdown documentation consider the following input file called `library.scm`:
+In order to demonstrate generation of HTML documentation consider the following input file called `library.scm`:
 
     ;;> This is my documented library.
     (define-library (math arithmetic)
@@ -77,29 +77,9 @@ In order to demonstrate generation of Markdown documentation consider the follow
         ;;> A magic constant.
         (define my-magic-constant 42)))
 
-In order to generate Markdown documentation, using `scmdoc`, for this library run the following command:
+In order to generate HTML documentation, using `scmdoc`, for this library run the following command:
 
     $ scmdoc library.scm
-
-This will generate the following Markdown document (extra whitespaces added for clarity):
-
-    # math arithmetic
-
-    This is my documented library.
-
-    ## Procedure my-proc
-
-    my-proc multiplies the given value with two.
-
-    	(my-proc x)
-
-    ## Constant my-magic-constant
-
-    A magic constant.
-
-    	my-magic-constant
-
-This file can then be processed further with a suitable Markdown implementation to generate an HTML or PDF document (e.g. [pandoc][pandoc web] or [discount][discount web]).
 
 ## Related Work
 
@@ -122,8 +102,6 @@ Furthermore, this code presently includes the Scheme number parser from [Husk Sc
 [gambit web]: https://www.gambitscheme.org/
 [racket r7rs]: https://pkgs.racket-lang.org/package/r7rs
 [chibi-doc source]: https://github.com/ashinn/chibi-scheme/blob/master/tools/chibi-doc
-[pandoc web]: https://pandoc.org/
-[discount web]: http://www.pell.portland.or.us/~orc/Code/discount/
 [husk-scheme github]: https://github.com/justinethier/husk-scheme
 [schemedoc web]: https://people.cs.aau.dk/~normark/schemedoc/
 [schemeweb ctan]: https://ctan.org/pkg/schemeweb

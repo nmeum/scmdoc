@@ -1,5 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc
-    (DocLib, findDocLibs, docDecls, docFmt)
+    (DocLib, findDocLibs, docDecls, docFmt, mkDoc)
 where
 
 import SchemeDoc.Types
@@ -7,7 +8,12 @@ import SchemeDoc.Error
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Library
 import SchemeDoc.Format.Formatter
-import SchemeDoc.Output
+
+import Text.Blaze
+import Text.Blaze.Html
+import Text.Blaze.Html.Renderer.String
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as A
 
 -- A documented Scheme library.
 type DocLib = (String, Library)
@@ -28,9 +34,21 @@ docDecls :: DocLib -> IO [Documented]
 docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 
 -- Expand a documented library wrt. its declarations.
-docFmt :: DocLib -> [Documented] -> [Block String]
-docFmt (libDesc, lib) decls =
-    (fmtFunc (fmt lib) $ libDesc) ++ [Heading H2 "Declarations"] ++ format lib defFormatter decls
+docFmt :: DocLib -> [Documented] -> Html
+docFmt (libDesc, lib) decls = do
+    fmtFunc (fmt lib) $ libDesc
+
+    H.h2 $ "Declarations"
+    format lib defFormatter decls
+
+-- Create an HTML document with the given title, stylesheet, and body.
+mkDoc :: String -> String -> Html -> String
+mkDoc title css hbody = renderHtml $ H.docTypeHtml $ do
+    H.head $ do
+        H.meta ! A.charset "UTF-8"
+        (H.link ! A.rel "stylesheet") ! A.href (stringValue css)
+        H.title $ toHtml title
+    H.body hbody
 
 -- Filter all non-documented S-expressions.
 filterDocs :: [Sexp] -> [Sexp]
