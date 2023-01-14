@@ -1,4 +1,7 @@
-* Parser: Fix parsing of trailing whitespaces in list
+* Use Data.Text over String
+* Consider using `lucid2` instead of `blaze-html`
+    * Ideally in combination with `mmark`
+    * See: https://github.com/mmark-md/mmark
 * Support different output formats (e.g. not just markdown)
 * Scribble-like syntax for comments
     * Have a function call syntax e.g. `@function{parameter}@`
