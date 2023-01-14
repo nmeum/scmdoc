@@ -1,12 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 module Main where
 
-import System.Exit
 import System.IO
-import System.Environment
 import System.FilePath
 import System.Directory
 import Control.Exception
+import Options.Applicative
 
 import SchemeDoc
 import SchemeDoc.Error
@@ -15,15 +14,41 @@ import SchemeDoc.Parser.R7RS
 import SchemeDoc.Format.Library
 import SchemeDoc.Util (parseFromFile)
 
--- Stylesheet to use for the generated HTML document.
--- TODO: Make this configurable.
-stylesheet :: String
-stylesheet = "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css"
+data Opts = Opts
+    { css     :: String
+    , title   :: String
+    , output  :: FilePath
+    , library :: FilePath }
 
-writeDoc :: DocLib -> IO ()
-writeDoc docLib@(_, lib) = do
+parseOpts :: Parser Opts
+parseOpts = Opts
+    <$> option auto
+        ( long "css"
+       <> short 's'
+       <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" )
+    <*> option auto
+        ( long "title"
+       <> short 's'
+       <> value "" )
+    <*> option str
+        ( long "output"
+       <> short 'o'
+       <> value "-" )
+    <*> argument str (metavar "FILE")
+
+------------------------------------------------------------------------
+
+writeDoc :: Opts -> DocLib -> IO ()
+writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib) = do
     decls <- docDecls docLib
-    putStrLn $ mkDoc (libName lib) stylesheet (docFmt docLib decls)
+    let hTitle = if null optTitle
+                    then libName lib
+                    else optTitle
+
+    let html = mkDoc hTitle optCss (docFmt docLib decls)
+    if optOut == "-"
+        then putStrLn html
+        else writeFile optOut $ html ++ "\n"
 
 findDocLibs' :: [Sexp] -> IO ([DocLib])
 findDocLibs' exprs =
@@ -31,19 +56,19 @@ findDocLibs' exprs =
         Right libs -> pure libs
         Left err -> throwIO $ ErrSyntax err
 
-main' :: String -> IO ()
-main' fileName =
+main' :: Opts -> IO ()
+main' opts@(Opts{library=optFile}) =
   catch
    ( do
-     source <- parseFromFile scheme fileName
+     source <- parseFromFile scheme optFile
 
      -- Expand all includes relative to given Scheme file.
-     setCurrentDirectory $ takeDirectory fileName
+     setCurrentDirectory $ takeDirectory optFile
 
      libs <- findDocLibs' source
      if null libs
          then hPutStrLn stderr "Warning: Found no documented define-library expression"
-         else mapM writeDoc libs >> pure ()
+         else mapM (writeDoc opts) libs >> pure ()
    )
    ( \case
      ErrSyntax (SyntaxError expr err) ->
@@ -53,10 +78,8 @@ main' fileName =
    )
 
 main :: IO ()
-main = do
-    args <- getArgs
-    if length args /= 1
-        then do
-            hPutStrLn stderr "USAGE: scmdoc FILE"
-            exitFailure
-        else main' $ head args
+main = main' =<< execParser opts
+  where
+    opts = info (parseOpts <**> helper)
+        ( fullDesc
+       <> progDesc "Generate HTML documentation for a R⁷RS Scheme library" )
