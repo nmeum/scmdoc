@@ -124,7 +124,7 @@ Furthermore, this code presently includes the Scheme number parser from [Husk Sc
 [chibi-doc source]: https://github.com/ashinn/chibi-scheme/blob/master/tools/chibi-doc
 [pandoc web]: https://pandoc.org/
 [discount web]: http://www.pell.portland.or.us/~orc/Code/discount/
-[husk-scheme github]: https://raw.githubusercontent.com/justinethier/husk-scheme
+[husk-scheme github]: https://github.com/justinethier/husk-scheme
 [schemedoc web]: https://people.cs.aau.dk/~normark/schemedoc/
 [schemeweb ctan]: https://ctan.org/pkg/schemeweb
 [mole paper]: http://www.schemeworkshop.org/2001/lisovsky.pdf
