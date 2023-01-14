@@ -1,7 +1,9 @@
 module SchemeDoc.Format.Util where
 
+import Data.Text (pack)
 import SchemeDoc.Types
 import Text.Blaze.Html
+import CMark
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -15,3 +17,7 @@ component prefix name = do
     H.h3 $ do
         toHtml $ prefix ++ " "
         H.a ! A.name (stringValue name) ! A.href (stringValue $ "#" ++ name) $ toHtml name
+
+-- Convert from Markdown to Html.
+fromMkd :: String -> Html
+fromMkd s = preEscapedToHtml $ commonmarkToHtml [] (pack s)

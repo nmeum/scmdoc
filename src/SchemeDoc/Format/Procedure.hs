@@ -5,9 +5,6 @@ import SchemeDoc.Types
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Util
 
-import Text.Blaze.Html
-import qualified Text.Blaze.Html5 as H
-
 data Procedure = Procedure { name   :: String
                            , params :: [String]
                            , body   :: [Sexp] }
@@ -17,7 +14,7 @@ instance Formatable Procedure where
     fmt (Procedure{name=n, params=p}) = Format n
         (\comment -> do
                         component "procedure" n
-                        H.p $ toHtml comment
+                        fromMkd comment
                         htmlSexp $ List ([Id n] ++ map Id p))
 
 -- Parses a Scheme procedure definition.

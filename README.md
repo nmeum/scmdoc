@@ -81,6 +81,8 @@ In order to generate HTML documentation, using `scmdoc`, for this library run th
 
     $ scmdoc library.scm
 
+Within documentation comments, it is possible to use Markdown markup.
+
 ## Related Work
 
 A loose, incomplete collection of similar work on the documentation of Scheme code:

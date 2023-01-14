@@ -8,6 +8,7 @@ import SchemeDoc.Types
 import SchemeDoc.Util
 import SchemeDoc.Error
 import SchemeDoc.Format.Types
+import SchemeDoc.Format.Util
 import SchemeDoc.Parser.R7RS
 
 import Text.Blaze.Html
@@ -23,7 +24,7 @@ instance Formatable Library where
     fmt (Library{name=n}) = Format (show n)
         (\comment -> do
                         H.h1 $ toHtml (show n)
-                        H.p $ toHtml comment)
+                        fromMkd comment)
 
 -- Parse a Scheme library definition.
 --
