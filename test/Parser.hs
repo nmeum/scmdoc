@@ -148,6 +148,11 @@ exprParser = testGroup "Expression parser"
             (Right $ [List [Id "unquote-splicing", List [Id "foo"]]])
             $ parse ",@  (foo)"
 
+        assertEqual
+            "Quote within list"
+            (Right $ [List [Id "foo", List [Id "quote", Number 5], Number 2]])
+            $ parse "(foo '5 2)"
+
     , testCase "Miscellaneous" $ do
         assertEqual
             "Comment with leading spaces"
