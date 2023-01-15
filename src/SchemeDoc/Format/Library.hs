@@ -1,8 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Library where
 
+import Data.Text hiding (any, foldr)
 import Control.Monad (foldM)
-import Data.List (intercalate)
 
 import SchemeDoc.Types
 import SchemeDoc.Util
@@ -21,9 +22,9 @@ data Library = Library { name    :: LibraryName
     deriving (Show)
 
 instance Formatable Library where
-    fmt (Library{name=n}) = Format (show n)
+    fmt lib = Format (libName lib)
         (\comment -> do
-                        H.h1 $ toHtml (show n)
+                        H.h1 $ toHtml (libName lib)
                         fromMkd comment)
 
 -- Parse a Scheme library definition.
@@ -59,11 +60,11 @@ mkLibrary e = makeErr e "found no library definition"
 
 -- Name of the library.
 -- Multiple identifiers are joined by a single ' ' character.
-libName :: Library -> String
-libName = show . name
+libName :: Library -> Text
+libName (Library{name=n}) = libName' n
 
 -- Whether the library exports the given **internal** identifier.
-libExports :: Library -> String -> Bool
+libExports :: Library -> Text -> Bool
 libExports lib ident = any (\Export{internal=i} -> i == ident) $
                             exports lib
 
@@ -81,12 +82,12 @@ expand e = throwSyntax e "not an include expression"
 expand' :: [Sexp] -> Bool -> IO Sexp
 expand' fileNames lower = do
     paths <- mapM (\case
-                    Str s -> pure $ if lower then foldcase s else s
+                    Str s -> pure $ if lower then toLower s else s
                     e     -> throwSyntax e "expected list of strings")
              fileNames
 
-    exprs <- (mapM (parseFromFile scheme) paths)
-    pure $ List ([Id "begin"] ++ concat exprs)
+    exprs <- (mapM (parseFromFile scheme . unpack) paths)
+    pure $ List ([Id "begin"] ++ Prelude.concat exprs)
 
 -- Expand the library declaration.
 -- Returns all begin blocks, including includer expressions as expanded begin blocks.
@@ -101,9 +102,12 @@ libExpand (Library{body=decl}) = foldM libExpand' [] decl
 
 ------------------------------------------------------------------------
 
-newtype LibraryName = LibName [String]
+newtype LibraryName = LibName [Text]
 instance Show LibraryName where
-    show (LibName lst) = intercalate " " lst
+    show = unpack . libName'
+
+libName' :: LibraryName -> Text
+libName' (LibName lst) = intercalate " " lst
 
 -- Parses a Scheme library name.
 --
@@ -114,7 +118,7 @@ mkLibName (List exprs) = LibName <$>
     mapM (\x -> case x of
         Id  ident -> Right $ ident
         -- TODO: Only allow <uinteger 10> in library name
-        Number n  -> Right $ (show n :: String)
+        Number n  -> Right $ pack (show n :: String)
         e         -> makeErr e "expected identifier or uinteger") exprs
 mkLibName e = makeErr e "expected non-empty list"
 
@@ -122,7 +126,7 @@ mkLibName e = makeErr e "expected non-empty list"
 
 -- Export specification with internal name and external name.
 -- For exports which are not renamed both are the same.
-data ExportSpec = Export { internal :: String, external :: String }
+data ExportSpec = Export { internal :: Text, external :: Text }
     deriving (Show)
 
 -- Export declaration for a library declaration.

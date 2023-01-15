@@ -3,6 +3,8 @@ module SchemeDoc
     (DocLib, findDocLibs, docDecls, docFmt, mkDoc)
 where
 
+import Data.Text hiding (foldr)
+
 import SchemeDoc.Types
 import SchemeDoc.Error
 import SchemeDoc.Format.Types
@@ -16,7 +18,7 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
 -- A documented Scheme library.
-type DocLib = (String, Library)
+type DocLib = (Text, Library)
 
 -- Find all documented Scheme library declarations in a Scheme source.
 findDocLibs :: [Sexp] -> Either SyntaxError [DocLib]

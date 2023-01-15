@@ -73,4 +73,5 @@ test-suite scmdoc-test
         tasty        ^>=1.4.2.3,
         tasty-hunit  ^>=0.10.0.3,
         parsec       ^>=3.1.15.1,
+        text,
         scmdoc

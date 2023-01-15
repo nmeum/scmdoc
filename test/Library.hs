@@ -1,9 +1,11 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Library where
 
 import Test.Tasty
 import Test.Tasty.HUnit
 
 import Util
+import Data.Text ()
 import SchemeDoc
 import SchemeDoc.Types
 import SchemeDoc.Format.Library

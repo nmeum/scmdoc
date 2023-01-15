@@ -1,15 +1,16 @@
 module SchemeDoc.Types where
 
-import Data.Complex
 import Data.List (intercalate)
+import Data.Text hiding (foldl, map, intercalate)
+import Data.Complex
 
 -- A documented S-expression
-type Documented = (String, Sexp)
+type Documented = (Text, Sexp)
 
 -- Algebraic data type representing Scheme S-Expressions.
-data Sexp = Str        String  -- "foo"
-          | Id         String  -- foo
-          | Symbol     String  -- 'foo
+data Sexp = Str        Text    -- "foo"
+          | Id         Text    -- foo
+          | Symbol     Text    -- 'foo
           | Char       Char    -- #\f
           | Boolean    Bool    -- #t
           | List       [Sexp]  -- ["foo" "bar"]
@@ -17,13 +18,13 @@ data Sexp = Str        String  -- "foo"
           | Float      Double
           | Complex    (Complex Double)
           | Rational   Rational
-          | DocComment String
+          | DocComment Text
     deriving (Eq)
 
 instance Show Sexp where
-    show (Str s) = "\"" ++ s ++ "\"" -- TODO: Perform escaping
-    show (Id i) = i
-    show (Symbol s) = "'" ++ s
+    show (Str s) = "\"" ++ (unpack s) ++ "\"" -- TODO: Perform escaping
+    show (Id i) = unpack i
+    show (Symbol s) = "'" ++ (unpack s)
     show (Char c) = "#\\" ++ [c]
     show (Boolean b) = if b then "#t" else "#f"
     show (List a) = "(" ++ (intercalate " " (map show a)) ++ ")"
@@ -31,7 +32,7 @@ instance Show Sexp where
     show (Float n) = show n
     show (Complex n) = show n
     show (Rational n) = show n
-    show (DocComment c) = ";;> " ++ c ++ "\n"
+    show (DocComment c) = ";;> " ++ (unpack c) ++ "\n"
 
 -- Traverse a Scheme source, i.e. a list of S-expressions.
 walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b

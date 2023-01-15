@@ -1,12 +1,15 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Procedure where
+
+import Data.Text hiding (map)
 
 import SchemeDoc.Types
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Util
 
-data Procedure = Procedure { name   :: String
-                           , params :: [String]
+data Procedure = Procedure { name   :: Text
+                           , params :: [Text]
                            , body   :: [Sexp] }
     deriving (Show)
 

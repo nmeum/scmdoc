@@ -1,6 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Util where
 
-import Data.Text (pack)
+import Data.Text
 import SchemeDoc.Types
 import Text.Blaze.Html
 import CMark
@@ -12,12 +13,12 @@ import qualified Text.Blaze.Html5.Attributes as A
 htmlSexp :: Sexp -> Html
 htmlSexp = H.pre . H.code . toHtml . show
 
-component :: String -> String -> Html
+component :: Text -> Text -> Html
 component prefix name = do
     H.h3 $ do
-        toHtml $ prefix ++ " "
-        H.a ! A.name (stringValue name) ! A.href (stringValue $ "#" ++ name) $ toHtml name
+        toHtml $ (toMarkup $ append prefix " ")
+        H.a ! A.name (textValue name) ! A.href (textValue (cons '#' name)) $ toHtml name
 
 -- Convert from Markdown to Html.
-fromMkd :: String -> Html
-fromMkd s = preEscapedToHtml $ commonmarkToHtml [] (pack s)
+fromMkd :: Text -> Html
+fromMkd s = preEscapedToHtml $ commonmarkToHtml [] s

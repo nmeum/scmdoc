@@ -1,9 +1,11 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Parser where
 
 import Test.Tasty
 import Test.Tasty.HUnit
 
 import Util
+import Data.Text
 import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
 

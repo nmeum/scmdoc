@@ -39,10 +39,10 @@ parseOpts = Opts
 ------------------------------------------------------------------------
 
 writeDoc :: Opts -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib) = do
+writeDoc (Opts optCss optTitle optOut _) docLib@(_, Library{name=n}) = do
     decls <- docDecls docLib
     let hTitle = if null optTitle
-                    then libName lib
+                    then show $ n
                     else optTitle
 
     let html = mkDoc hTitle optCss (docFmt docLib decls)
