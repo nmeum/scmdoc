@@ -52,7 +52,11 @@ mkDoc :: String -> String -> Html -> String
 mkDoc title css hbody = renderHtml $ H.docTypeHtml $ do
     H.head $ do
         H.meta ! A.charset "UTF-8"
-        (H.link ! A.rel "stylesheet") ! A.href (stringValue css)
+        H.meta ! A.name "viewport"
+               ! A.content "width=device-width, initial-scale=1"
+
+        H.link ! A.rel "stylesheet"
+               ! A.href (stringValue css)
         H.title $ toHtml title
     H.body hbody
 
