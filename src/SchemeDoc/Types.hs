@@ -5,7 +5,7 @@ import Data.Text hiding (foldl, map, intercalate)
 import Data.Complex
 
 -- A documented S-expression
-type Documented = (Text, Sexp)
+type Documented = (Text, Maybe Sexp)
 
 -- Algebraic data type representing Scheme S-Expressions.
 data Sexp = Str        Text    -- "foo"
@@ -39,4 +39,3 @@ walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b
 walk proc acc src = foldl (\a x -> case x of
     List exprs -> walk proc (proc a x) exprs
     expr       -> proc a expr) acc src
-

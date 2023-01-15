@@ -24,7 +24,7 @@ type DocLib = (Text, Library)
 findDocLibs :: [Sexp] -> Either SyntaxError [DocLib]
 findDocLibs exprs = foldr fn (Right []) (findDocumented exprs)
     where
-        fn (s, e@(List ((Id "define-library"):_))) acc =
+        fn (s, (Just e@(List ((Id "define-library"):_)))) acc =
             case mkLibrary e of
                 Right lib -> fmap ((:) (s, lib)) acc
                 Left err  -> Left err
@@ -41,11 +41,7 @@ docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 docFmt :: DocLib -> [Documented] -> (Html, [Sexp])
 docFmt (libDesc, lib) decls =
     let (h, f) = format lib defFormatter decls in
-        (do
-                fmtFunc (fmt lib) $ libDesc
-                H.h2 $ "Declarations"
-                h
-        ,f)
+        ((fmtFunc (fmt lib) $ libDesc) >> h, f)
 
 -- Create an HTML document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String
@@ -74,5 +70,6 @@ findDocumented = toPairLst . filterDocs
     where
         toPairLst :: [Sexp] -> [(Documented)]
         toPairLst [] = []
-        toPairLst ((DocComment s):expr:xs) = (s, expr) : toPairLst xs
+        toPairLst ((DocComment c1):c@(DocComment _):xs) = (c1, Nothing) : toPairLst (c:xs)
+        toPairLst ((DocComment s):expr:xs) = (s, Just expr) : toPairLst xs
         toPairLst _ = error "unreachable"
