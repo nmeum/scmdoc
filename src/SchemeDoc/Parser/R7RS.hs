@@ -184,7 +184,7 @@ comment = skip $
 --  <doc comment> → ;;> <all subsequent characters up to a line ending>
 --
 docComment :: Parser Sexp
-docComment = fmap (DocComment . pack . ltrim . concat) $
+docComment = fmap (DocComment . pack . trim . concat) $
     (many1 $ P.string ";;>" >> manyTill anyChar endOfLine)
 
 -- Sign subsequent for peculiar identifier.
