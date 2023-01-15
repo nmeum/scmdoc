@@ -36,12 +36,16 @@ docDecls :: DocLib -> IO [Documented]
 docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 
 -- Expand a documented library wrt. its declarations.
-docFmt :: DocLib -> [Documented] -> Html
-docFmt (libDesc, lib) decls = do
-    fmtFunc (fmt lib) $ libDesc
-
-    H.h2 $ "Declarations"
-    format lib defFormatter decls
+-- Returns resulting HTML and list of S-expressions
+-- for which no formatter was found.
+docFmt :: DocLib -> [Documented] -> (Html, [Sexp])
+docFmt (libDesc, lib) decls =
+    let (h, f) = format lib defFormatter decls in
+        (do
+                fmtFunc (fmt lib) $ libDesc
+                H.h2 $ "Declarations"
+                h
+        ,f)
 
 -- Create an HTML document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String

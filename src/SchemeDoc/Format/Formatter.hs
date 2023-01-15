@@ -25,8 +25,12 @@ runFormat lib f expr = f expr >>= (\(Format i fn) -> if libExports lib i
 
 -- Format all documented S-expressions which are exported
 -- by the given Scheme library using the given Formatter.
-format :: Library -> Formatter -> [Documented] -> Html
-format lib formatFn = foldl (\acc (comment, expr) ->
+--
+-- Returns pair of HTML for succesfully formatted S-expressions
+-- and list of S-expressions which are documented but for which
+-- no formatter was found.
+format :: Library -> Formatter -> [Documented] -> (Html, [Sexp])
+format lib formatFn = foldl (\(acc, failed) (comment, expr) ->
                                 case runFormat lib formatFn expr of
-                                    Just f  -> Append acc (f comment)
-                                    Nothing -> acc) (toHtml "")
+                                    Just f  -> (Append acc (f comment), failed)
+                                    Nothing -> (acc, failed ++ [expr])) ((toHtml ""), [])

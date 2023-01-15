@@ -5,6 +5,7 @@ import System.IO
 import System.FilePath
 import System.Directory
 import Control.Exception
+import Control.Monad
 import Options.Applicative
 
 import SchemeDoc
@@ -45,7 +46,11 @@ writeDoc (Opts optCss optTitle optOut _) docLib@(_, Library{name=n}) = do
                     then show $ n
                     else optTitle
 
-    let html = mkDoc hTitle optCss (docFmt docLib decls)
+    let (hbody, failed) = docFmt docLib decls
+    forM_ failed (\f -> hPutStrLn stderr $
+        "WARNING: Failed to find formatter for documented S-expression:\n\n\t" ++ show f ++ "\n")
+
+    let html = mkDoc hTitle optCss hbody
     if optOut == "-"
         then putStrLn html
         else writeFile optOut $ html ++ "\n"

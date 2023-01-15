@@ -32,7 +32,7 @@ instance Show Sexp where
     show (Float n) = show n
     show (Complex n) = show n
     show (Rational n) = show n
-    show (DocComment c) = ";;> " ++ (unpack c) ++ "\n"
+    show (DocComment c) = ";;> " ++ (unpack c)
 
 -- Traverse a Scheme source, i.e. a list of S-expressions.
 walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b
