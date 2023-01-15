@@ -17,7 +17,9 @@ component :: Text -> Text -> Html
 component prefix name = do
     H.h3 $ do
         toHtml $ (toMarkup $ append prefix " ")
-        H.a ! A.name (textValue name) ! A.href (textValue (cons '#' name)) $ toHtml name
+        H.a ! A.name (textValue name)
+            ! A.href (textValue (cons '#' name))
+            $ toHtml name
 
 -- Convert from Markdown to Html.
 fromMkd :: Text -> Html
