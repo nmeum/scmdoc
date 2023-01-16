@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Parser.R7RS (scheme) where
 
+import Prelude hiding (concat)
 import SchemeDoc.Types
 import SchemeDoc.Parser.Util
 import SchemeDoc.Parser.Number
 
 import Data.Char
-import Data.Text hiding (concat)
+import Data.Text
 
 import Text.Parsec.Char (endOfLine)
 import Text.ParserCombinators.Parsec hiding (space, spaces, string)
@@ -184,8 +185,8 @@ comment = skip $
 --  <doc comment> → ;;> <all subsequent characters up to a line ending>
 --
 docComment :: Parser Sexp
-docComment = fmap (DocComment . pack . trim . concat) $
-    (many1 $ P.string ";;>" >> manyTill anyChar endOfLine)
+docComment = fmap (DocComment . trim . concat) $
+    (many1 $ P.string ";;>" >> (pack <$> manyTill anyChar endOfLine))
 
 -- Sign subsequent for peculiar identifier.
 --
