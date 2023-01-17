@@ -11,7 +11,6 @@ import SchemeDoc.Format.Types
 import SchemeDoc.Format.Library
 import SchemeDoc.Format.Formatter
 
-import Text.Blaze
 import Text.Blaze.Html
 import Text.Blaze.Html.Renderer.String
 import qualified Text.Blaze.Html5 as H

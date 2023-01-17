@@ -39,7 +39,6 @@ library
         base         ^>=4.15.1.0,
         parsec       ^>=3.1.15.1,
         blaze-html   ^>=0.9.1.2,
-        blaze-markup ^>=0.8.2.8,
         cmark        ^>=0.6,
         text
 

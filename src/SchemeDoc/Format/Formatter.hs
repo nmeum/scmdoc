@@ -4,7 +4,6 @@ where
 
 import Control.Applicative
 import Text.Blaze.Html
-import Text.Blaze.Internal (MarkupM(Append))
 
 import SchemeDoc.Types
 import SchemeDoc.Format.Types
@@ -32,5 +31,5 @@ runFormat lib f expr = f expr >>= (\(Format i fn) -> if libExports lib i
 format :: Library -> Formatter -> [Documented] -> (Html, [Sexp])
 format lib formatFn = foldl (\(acc, failed) (comment, expr) ->
                                 case runFormat lib formatFn expr of
-                                    Just f  -> (Append acc (f comment), failed)
+                                    Just f  -> (acc >> (f comment), failed)
                                     Nothing -> (acc, failed ++ [expr])) ((toHtml ""), [])
