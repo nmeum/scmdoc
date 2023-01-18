@@ -17,7 +17,7 @@ component :: Text -> Text -> Html
 component prefix name = do
     H.h3 $ do
         toHtml $ (toMarkup $ append prefix " ")
-        H.a ! A.name (textValue name)
+        H.a ! A.id (textValue name)
             ! A.href (textValue (cons '#' name))
             $ toHtml name
 
