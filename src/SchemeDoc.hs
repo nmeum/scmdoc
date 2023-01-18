@@ -40,11 +40,7 @@ docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 docFmt :: DocLib -> [Documented] -> (Html, [Sexp])
 docFmt (libDesc, lib) decls =
     let (h, f) = format lib defFormatter decls in
-        (do
-                fmtFunc (fmt lib) $ libDesc
-                H.h2 $ "Declarations"
-                h
-        ,f)
+        ((fmtFunc (fmt lib) $ libDesc) >> h, f)
 
 -- Create an HTML document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String
