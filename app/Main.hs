@@ -29,7 +29,7 @@ parseOpts = Opts
        <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" )
     <*> option auto
         ( long "title"
-       <> short 's'
+       <> short 't'
        <> value "" )
     <*> option str
         ( long "output"
