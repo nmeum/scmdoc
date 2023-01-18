@@ -23,11 +23,11 @@ data Opts = Opts
 
 parseOpts :: Parser Opts
 parseOpts = Opts
-    <$> option auto
+    <$> option str
         ( long "css"
        <> short 's'
        <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" )
-    <*> option auto
+    <*> option str
         ( long "title"
        <> short 't'
        <> value "" )
