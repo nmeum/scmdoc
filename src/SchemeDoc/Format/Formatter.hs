@@ -118,7 +118,9 @@ findComponents root formatFn docs =
 format :: Library -> Formatter -> [Documented] -> (Html, [Sexp])
 format lib fmtF docs = ( do
                             H.h2 (toHtml "Index")
-                            tableOfContents exportedComps
+                            H.details $ do
+                                H.summary (toHtml "Table of contents")
+                                tableOfContents exportedComps
                             foldl (\acc comp -> case comp of
                                       P c -> acc >> compFormat c
                                       S s -> acc >> sectionFormat s
