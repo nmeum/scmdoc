@@ -57,6 +57,7 @@ compFormat c = (compFunc c) $ compDesc c
 -- Format a section comment as HTML.
 sectionFormat :: Section -> Html
 sectionFormat s@(Section n desc) = do
+    -- TODO: Add <section> tags for each H2
     H.h2 ! A.id (textValue $ compAnchor (S s))
          $ (toHtml n)
     H.p  (toHtml desc)
