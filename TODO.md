@@ -1,8 +1,5 @@
-* Add table of contents
-* Print Warnings if some expressions were not formatted
-* Support section comments (i.e. comments not followed by an s-expression)
-* Use Data.Text over String
-
+* Add flag to include un-exported identifiers in documentation
+* Print warnings if some exported expressions where not formatted
 * Consider using `lucid2` instead of `blaze-html`
     * Ideally in combination with `mmark`
     * See: https://github.com/mmark-md/mmark
