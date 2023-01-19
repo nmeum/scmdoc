@@ -1,6 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-module SchemeDoc.Format.Library where
+module SchemeDoc.Format.Library
+    (Library(..), mkLibrary, libName, libExports, libExpand)
+where
 
 import Data.Text hiding (any, foldr)
 import Control.Monad (foldM)
@@ -16,9 +18,9 @@ import Text.Blaze.Html
 import qualified Text.Blaze.Html5 as H
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
-data Library = Library { name    :: LibraryName
-                       , exports :: [ExportSpec] -- TODO: Make this a set
-                       , body    :: [Sexp] }
+data Library = Library { libIdent  :: LibraryName
+                       , libExport :: [ExportSpec] -- TODO: Make this a set
+                       , libBody   :: [Sexp] }
     deriving (Show)
 
 instance Formatable Library where
@@ -61,12 +63,12 @@ mkLibrary e = makeErr e "found no library definition"
 -- Name of the library.
 -- Multiple identifiers are joined by a single ' ' character.
 libName :: Library -> Text
-libName (Library{name=n}) = libName' n
+libName (Library{libIdent=n}) = libName' n
 
 -- Whether the library exports the given **internal** identifier.
 libExports :: Library -> Text -> Bool
 libExports lib ident = any (\Export{internal=i} -> i == ident) $
-                            exports lib
+                            libExport lib
 
 -- Expand an include into a begin expression.
 --
@@ -92,7 +94,7 @@ expand' fileNames lower = do
 -- Expand the library declaration.
 -- Returns all begin blocks, including includer expressions as expanded begin blocks.
 libExpand :: Library -> IO [Sexp]
-libExpand (Library{body=decl}) = foldM libExpand' [] decl
+libExpand (Library{libBody=decl}) = foldM libExpand' [] decl
     where
         libExpand' :: [Sexp] -> Sexp -> IO [Sexp]
         libExpand' acc e@(List ((Id "begin"):_))      = pure $ e : acc

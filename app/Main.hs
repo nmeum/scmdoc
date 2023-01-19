@@ -40,7 +40,7 @@ parseOpts = Opts
 ------------------------------------------------------------------------
 
 writeDoc :: Opts -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle optOut _) docLib@(_, Library{name=n}) = do
+writeDoc (Opts optCss optTitle optOut _) docLib@(_, Library{libIdent=n}) = do
     decls <- docDecls docLib
     let hTitle = if null optTitle
                     then show $ n
