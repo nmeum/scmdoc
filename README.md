@@ -83,6 +83,25 @@ In order to generate HTML documentation, using `scmdoc`, for this library run th
 
 Within documentation comments, it is possible to use Markdown markup.
 
+### Section Comments
+
+Due to the lack of type information, it is difficult to meaningfully group Scheme program components.
+For this reason, `scmdoc` relies on manually inserted *section comments* for grouping.
+A section comment is a documentation comment which starts with a `|` character and is followed by an empty line and a normal documentation comment.
+The section comment corresponds to the section title, the documentation comment following it functions as the section description.
+For example:
+
+    ;;>| Multiplication Procedures
+
+    ;;> Procedures for performing multiplication
+
+    ;;> Multiply two signed values.
+    (define (multS x y) …)
+
+This will group the procedure `multS` into the section *“Multiplication Procedures”*.
+Every section comment *must* be followed by a normal documentation comment.
+Each documented Scheme library *should* contain at least one section comment.
+
 ## Related Work
 
 A loose, incomplete collection of similar work on the documentation of Scheme code:
