@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Formatter
 where
 
@@ -48,7 +49,7 @@ data Component = P ProgComp | S Section
 -- Return unique anchor for a compoment.
 compAnchor :: Component -> Text
 compAnchor (P c) = compId c -- TODO: Ensure that this is aligned with format function
-compAnchor (S (Section n _)) = (pack "section-") `append` toAnchor n
+compAnchor (S (Section n _)) = "section-" `append` toAnchor n
   where
     toAnchor :: Text -> Text
     toAnchor = map (\c -> if isSpace c then '-' else c) . toLower
@@ -56,7 +57,7 @@ compAnchor (S (Section n _)) = (pack "section-") `append` toAnchor n
 -- Generate an anchor tag which links to a given compoment.
 compLink :: Component -> Html
 compLink c = do
-    H.a ! A.href (textValue $ append (pack "#") (compAnchor c))
+    H.a ! A.href (textValue $ cons '#' (compAnchor c))
         $ (toHtml $ compName c)
   where
     compName :: Component -> Text
@@ -129,16 +130,16 @@ findComponents root formatFn docs =
 -- no formatter was found.
 format :: Library -> Formatter -> [Documented] -> (Html, [Sexp])
 format lib fmtF docs = ( do
-                            H.h2 (toHtml "Index")
+                            H.h2 "Index"
                             H.details $ do
-                                H.summary (toHtml "Table of contents")
+                                H.summary "Table of contents"
                                 tableOfContents exportedComps
                             forM_ exportedComps (\case
                                       P c -> compFormat c
                                       S s -> sectionFormat s)
                        , unFmt )
   where
-    (comps, unFmt) = findComponents (Section (pack "") (pack "")) fmtF docs
+    (comps, unFmt) = findComponents (Section "" "") fmtF docs
     exportedComps  = filter (\case
                                 P c -> libExports lib $ compId c
                                 S _ -> True) comps
