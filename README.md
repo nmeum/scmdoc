@@ -101,6 +101,7 @@ For example:
 This will group the procedure `multS` into the section *“Multiplication Procedures”*.
 Every section comment *must* be followed by a normal documentation comment.
 Each documented Scheme library *should* contain at least one section comment.
+If the Scheme library doesn't contain any section comments then everything is grouped under an arbitrary “Declarations” section.
 
 ### Look and Feel
 

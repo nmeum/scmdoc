@@ -5,7 +5,7 @@ where
 
 import Prelude hiding (map, length, head, tail)
 import Data.Char (isSpace)
-import Data.Text hiding (filter, foldl, foldr)
+import Data.Text hiding (filter, foldl, foldr, any)
 import Control.Applicative
 import Control.Monad
 
@@ -30,6 +30,11 @@ data ProgComp = ProgComp { compId     :: Text
 -- Section represents a section comment in the source.
 -- Each section comment has a title and a description.
 data Section = Section Text Text
+
+-- Default section, used if the input file doesn't contain
+-- a single section comment of its own.
+defaultSection :: Section
+defaultSection = Section "Declarations" ""
 
 -- Character used to identify section comments.
 sectionChar :: Char
@@ -133,13 +138,25 @@ format lib fmtF docs = ( do
                             H.h2 "Index"
                             H.details $ do
                                 H.summary "Table of contents"
-                                tableOfContents exportedComps
-                            forM_ exportedComps (\case
+                                tableOfContents finalComps
+                            forM_ finalComps (\case
                                       P c -> compFormat c
                                       S s -> sectionFormat s)
                        , unFmt )
   where
-    (comps, unFmt) = findComponents (Section "" "") fmtF docs
-    exportedComps  = filter (\case
+    -- Find all program and section components in the input.
+    (comps, unFmt) = findComponents defaultSection fmtF docs
+
+    -- Exclude any non-exported program components.
+    exportedComps = filter (\case
                                 P c -> libExports lib $ compId c
                                 S _ -> True) comps
+
+    -- Extra components to prepend to the component list.
+    -- Neccessary to ensure that HTML heading structure is always valid.
+    extraComps = if any (\case { P _ -> False ;  S _ -> True }) exportedComps
+                        then []
+                        else [S defaultSection]
+
+    -- Prepend extraComps to the exported components.
+    finalComps = extraComps ++ exportedComps
