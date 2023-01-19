@@ -93,7 +93,7 @@ For example:
 
     ;;>| Multiplication Procedures
 
-    ;;> Procedures for performing multiplication
+    ;;> Procedures for performing multiplication.
 
     ;;> Multiply two signed values.
     (define (multS x y) …)
