@@ -6,6 +6,7 @@ import Prelude hiding (map)
 import Data.Char (isSpace)
 import Data.Text hiding (filter, foldl, foldr, length, head)
 import Control.Applicative
+import Control.Monad
 
 import SchemeDoc.Types
 import SchemeDoc.Format.Types
@@ -74,15 +75,13 @@ tableOfContents' ((S sec):xs) toc              = tableOfContents' xs (toc ++ [(H
 tableOfContents' [] toc                        = toc
 
 formatProgComps :: [ProgComp] -> Html
-formatProgComps = foldl (\acc pc -> acc >> (H.li $ compLink (P pc)))
-                        (toHtml "")
+formatProgComps comps = forM_ comps (\pc -> H.li $ compLink (P pc))
 
 tableOfContents :: [Component] -> Html
 tableOfContents comps = H.ul $ do
-    foldl (\acc t -> case t of
-        Heading s   -> acc >> H.li (compLink $ S s)
-        Items   lst -> acc >> H.ul (formatProgComps lst))
-          (toHtml "") toc
+    forM_ toc (\t -> case t of
+        Heading s   -> H.li (compLink $ S s)
+        Items   lst -> H.ul (formatProgComps lst))
   where
     toc = tableOfContents' comps []
 
@@ -121,10 +120,9 @@ format lib fmtF docs = ( do
                             H.details $ do
                                 H.summary (toHtml "Table of contents")
                                 tableOfContents exportedComps
-                            foldl (\acc comp -> case comp of
-                                      P c -> acc >> compFormat c
-                                      S s -> acc >> sectionFormat s
-                                  ) (toHtml "") exportedComps
+                            forM_ exportedComps (\case
+                                      P c -> compFormat c
+                                      S s -> sectionFormat s)
                        , unFmt )
   where
     (comps, unFmt) = findComponents (Section (pack "") (pack "")) fmtF docs
