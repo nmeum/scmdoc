@@ -55,7 +55,7 @@ For example, the formatter for Scheme procedure definitions roughly looks as fol
 
 In the future, it should be possible to also supply custom formatters to, for example, to generate documentation for definitions defined using custom macros.
 
-## Usage Example
+## Usage
 
 The `scmdoc` tool generates HTML from a Scheme input defining a R7RS library.
 As described above, only documented S-expressions for which a documentation formatter is available are included in the generated documentation.
