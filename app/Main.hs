@@ -24,7 +24,7 @@ data Opts = Opts
 parseOpts :: Parser Opts
 parseOpts = Opts
     <$> option str
-        ( long "css"
+        ( long "stylesheet"
        <> short 's'
        <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" )
     <*> option str
