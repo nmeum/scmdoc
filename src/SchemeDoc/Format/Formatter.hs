@@ -2,9 +2,9 @@
 module SchemeDoc.Format.Formatter
 where
 
-import Prelude hiding (map)
+import Prelude hiding (map, length, head)
 import Data.Char (isSpace)
-import Data.Text hiding (filter, foldl, foldr, length, head)
+import Data.Text hiding (filter, foldl, foldr)
 import Control.Applicative
 import Control.Monad
 
@@ -28,6 +28,14 @@ data ProgComp = ProgComp { compId     :: Text
 -- Section represents a section comment in the source.
 -- Each section comment has a title and a description.
 data Section = Section Text Text
+
+-- Character used to identify section comments.
+sectionChar :: Char
+sectionChar = '|'
+
+-- Returns true if the given comment text is a section comment.
+isSectionComment :: Text -> Bool
+isSectionComment t = length t >= 1 && head t == sectionChar
 
 -- Comment in the documented source code.
 -- This is either a program component (i.e. an S-expression) or a section comment.
@@ -100,9 +108,10 @@ findComponents :: Section -> Formatter -> [Documented] -> ([Component], [Sexp])
 findComponents root formatFn docs =
     let (a, _, c) = foldl format' ([], root, []) docs in (a, c)
   where
-    format' (acc, _, unFmt) (sec, (DocComment desc)) =
-        -- TODO: Check if sec has the format "| text", e.g. ";;>| My Section"
-        let s = Section sec desc in (acc ++ [S s], s, unFmt)
+    format' (acc, p, unFmt) (sec, com@(DocComment desc)) =
+        if isSectionComment sec
+            then let s = Section sec desc in (acc ++ [S s], s, unFmt)
+            else (acc, p, unFmt ++ [com])
     format' (acc, p, unFmt) (desc, expr) =
         case mkProgComp formatFn p desc expr of
             Just c   -> (acc ++ [P c], p, unFmt)
