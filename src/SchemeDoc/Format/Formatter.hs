@@ -2,13 +2,14 @@
 module SchemeDoc.Format.Formatter
 where
 
-import Prelude hiding (map, length, head)
+import Prelude hiding (map, length, head, tail)
 import Data.Char (isSpace)
 import Data.Text hiding (filter, foldl, foldr)
 import Control.Applicative
 import Control.Monad
 
 import SchemeDoc.Types
+import SchemeDoc.Util (ltrim)
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Procedure
 import SchemeDoc.Format.Constant
@@ -33,9 +34,12 @@ data Section = Section Text Text
 sectionChar :: Char
 sectionChar = '|'
 
--- Returns true if the given comment text is a section comment.
-isSectionComment :: Text -> Bool
-isSectionComment t = length t >= 1 && head t == sectionChar
+-- If the given Text constitutes a section comment regarding
+-- the section title. Othwerwise, return Nothing.
+sectionComment :: Text -> Maybe Text
+sectionComment t = if length t >= 1 && head t == sectionChar
+                       then Just (ltrim $ tail t)
+                       else Nothing
 
 -- Comment in the documented source code.
 -- This is either a program component (i.e. an S-expression) or a section comment.
@@ -108,10 +112,10 @@ findComponents :: Section -> Formatter -> [Documented] -> ([Component], [Sexp])
 findComponents root formatFn docs =
     let (a, _, c) = foldl format' ([], root, []) docs in (a, c)
   where
-    format' (acc, p, unFmt) (sec, com@(DocComment desc)) =
-        if isSectionComment sec
-            then let s = Section sec desc in (acc ++ [S s], s, unFmt)
-            else (acc, p, unFmt ++ [com])
+    format' (acc, p, unFmt) (secRaw, com@(DocComment desc)) =
+        case sectionComment secRaw of
+            Just sec -> let s = Section sec desc in (acc ++ [S s], s, unFmt)
+            Nothing  -> (acc, p, unFmt ++ [com])
     format' (acc, p, unFmt) (desc, expr) =
         case mkProgComp formatFn p desc expr of
             Just c   -> (acc ++ [P c], p, unFmt)

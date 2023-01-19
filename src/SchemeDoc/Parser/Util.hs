@@ -1,9 +1,7 @@
 module SchemeDoc.Parser.Util where
 
-import Data.Char (isSpace)
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
-import qualified Data.Text as T
 
 -- Parse a hexadecimal number without a prefix.
 hex :: Parser Int
@@ -36,13 +34,3 @@ filterJust :: [Maybe a] -> [a]
 filterJust = foldr (\x acc -> case x of
                                 Nothing -> acc
                                 Just x' -> x' : acc) []
-
--- Trim all whitespaces from the left and right side of a string.
-trim :: T.Text -> T.Text
-trim = rtrim . ltrim
-  where
-    ltrim :: T.Text -> T.Text
-    ltrim = T.dropWhile isSpace
-
-    rtrim :: T.Text -> T.Text
-    rtrim = T.dropWhileEnd isSpace

@@ -2,6 +2,7 @@
 module SchemeDoc.Parser.R7RS (scheme) where
 
 import Prelude hiding (concat)
+import SchemeDoc.Util
 import SchemeDoc.Types
 import SchemeDoc.Parser.Util
 import SchemeDoc.Parser.Number
