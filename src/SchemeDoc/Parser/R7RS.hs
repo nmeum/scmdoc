@@ -1,14 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Parser.R7RS (scheme) where
 
-import Prelude hiding (concat)
 import SchemeDoc.Util
 import SchemeDoc.Types
 import SchemeDoc.Parser.Util
 import SchemeDoc.Parser.Number
 
 import Data.Char
-import Data.Text
+import qualified Data.Text as T
 
 import Text.Parsec.Char (endOfLine)
 import Text.ParserCombinators.Parsec hiding (space, spaces, string)
@@ -186,8 +185,8 @@ comment = skip $
 --  <doc comment> → ;;> <all subsequent characters up to a line ending>
 --
 docComment :: Parser Sexp
-docComment = fmap (DocComment . trim . concat) $
-    (many1 $ P.string ";;>" >> (pack <$> manyTill anyChar endOfLine))
+docComment = fmap (DocComment . trim . T.concat) $
+    (many1 $ P.string ";;>" >> (T.pack <$> manyTill anyChar endOfLine))
 
 -- Sign subsequent for peculiar identifier.
 --
@@ -248,7 +247,7 @@ peculiarIdentifier = fmap (\x -> [x]) (try explicitSign)
 --      | <peculiar identifier>
 --
 identifier :: Parser Sexp
-identifier = fmap (Id . pack) $
+identifier = fmap (Id . T.pack) $
     (initial >>= (\i -> fmap ((:) i) $ many subsequent))
         <|> between (char '|') (char '|') (many symbolElement)
         <|> peculiarIdentifier
@@ -279,7 +278,7 @@ character = fmap Char $
 --  <string> → " <string element>* "
 --
 string :: Parser Sexp
-string = fmap (Str . pack) $
+string = fmap (Str . T.pack) $
     between (char '"') (char '"') (filterJust <$> many stringElement)
 
 -- Parse a list, e.g. (1 2 3).

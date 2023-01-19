@@ -2,17 +2,17 @@ module SchemeDoc.Format.Types
     (FormatF, Format(..), Formatable(..), Formatter)
 where
 
-import Data.Text
 import Text.Blaze.Html
+import qualified Data.Text as T
 
 import SchemeDoc.Types
 
 -- A function for formatting an S-expressions.
 -- Receives the documentation comment for the expression as an input.
-type FormatF = (Text -> Html)
+type FormatF = (T.Text -> Html)
 
 -- A Scheme expression prepared for formatting.
-data Format = Format { fmtId   :: Text
+data Format = Format { fmtId   :: T.Text
                      , fmtFunc :: FormatF }
 
 -- Type class to convert a given type to a formatted S-expression.

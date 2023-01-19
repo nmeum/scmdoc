@@ -1,13 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Constant where
 
-import Data.Text
-
 import SchemeDoc.Types
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Util
+import qualified Data.Text as T
 
-data Constant = Constant { consName  :: Text
+data Constant = Constant { consName  :: T.Text
                          , consValue :: Sexp }
     deriving (Show)
 

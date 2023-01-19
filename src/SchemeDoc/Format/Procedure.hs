@@ -2,14 +2,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Procedure where
 
-import Data.Text hiding (map)
+import qualified Data.Text as T
 
 import SchemeDoc.Types
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Util
 
-data Procedure = Procedure { name   :: Text
-                           , params :: [Text]
+data Procedure = Procedure { name   :: T.Text
+                           , params :: [T.Text]
                            , body   :: [Sexp] }
     deriving (Show)
 

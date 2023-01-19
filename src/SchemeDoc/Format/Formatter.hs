@@ -3,9 +3,7 @@
 module SchemeDoc.Format.Formatter
 where
 
-import Prelude hiding (map, length, head, tail)
 import Data.Char (isSpace)
-import Data.Text hiding (filter, foldl, foldr, any)
 import Control.Applicative
 import Control.Monad
 
@@ -17,19 +15,20 @@ import SchemeDoc.Format.Constant
 import SchemeDoc.Format.Library
 
 import Text.Blaze.Html
+import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
 -- Program component (i.e. S-expression) suitable for formatting.
 -- For example, procedure definitions, library declarations, et cetera.
-data ProgComp = ProgComp { compId     :: Text
+data ProgComp = ProgComp { compId     :: T.Text
                          , compParent :: Section
-                         , compDesc   :: Text
+                         , compDesc   :: T.Text
                          , compFunc   :: FormatF }
 
 -- Section represents a section comment in the source.
 -- Each section comment has a title and a description.
-data Section = Section Text Text
+data Section = Section T.Text T.Text
 
 -- Default section, used if the input file doesn't contain
 -- a single section comment of its own.
@@ -42,9 +41,9 @@ sectionChar = '|'
 
 -- If the given Text constitutes a section comment regarding
 -- the section title. Othwerwise, return Nothing.
-sectionComment :: Text -> Maybe Text
-sectionComment t = if length t >= 1 && head t == sectionChar
-                       then Just (ltrim $ tail t)
+sectionComment :: T.Text -> Maybe T.Text
+sectionComment t = if T.length t >= 1 && T.head t == sectionChar
+                       then Just (ltrim $ T.tail t)
                        else Nothing
 
 -- Comment in the documented source code.
@@ -52,20 +51,20 @@ sectionComment t = if length t >= 1 && head t == sectionChar
 data Component = P ProgComp | S Section
 
 -- Return unique anchor for a compoment.
-compAnchor :: Component -> Text
+compAnchor :: Component -> T.Text
 compAnchor (P c) = compId c -- TODO: Ensure that this is aligned with format function
-compAnchor (S (Section n _)) = "section-" `append` toAnchor n
+compAnchor (S (Section n _)) = "section-" `T.append` toAnchor n
   where
-    toAnchor :: Text -> Text
-    toAnchor = map (\c -> if isSpace c then '-' else c) . toLower
+    toAnchor :: T.Text -> T.Text
+    toAnchor = T.map (\c -> if isSpace c then '-' else c) . T.toLower
 
 -- Generate an anchor tag which links to a given compoment.
 compLink :: Component -> Html
 compLink c = do
-    H.a ! A.href (textValue $ cons '#' (compAnchor c))
+    H.a ! A.href (textValue $ T.cons '#' (compAnchor c))
         $ (toHtml $ compName c)
   where
-    compName :: Component -> Text
+    compName :: Component -> T.Text
     compName (P c') = compId c'
     compName (S (Section n _)) = n
 
@@ -110,7 +109,7 @@ defFormatter :: Sexp -> Maybe Format
 defFormatter sexp = fmt <$> mkConstant sexp
                 <|> fmt <$> mkProcedure sexp
 
-mkProgComp :: Formatter -> Section -> Text -> Sexp -> Maybe ProgComp
+mkProgComp :: Formatter -> Section -> T.Text -> Sexp -> Maybe ProgComp
 mkProgComp f parent desc expr = f expr >>=
     (\(Format i fn) -> Just $ ProgComp i parent desc fn)
 

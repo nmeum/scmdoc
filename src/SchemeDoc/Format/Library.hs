@@ -4,7 +4,6 @@ module SchemeDoc.Format.Library
     (Library(..), mkLibrary, libName, libExports, libExpand)
 where
 
-import Data.Text hiding (any, foldr)
 import Control.Monad (foldM)
 
 import SchemeDoc.Types
@@ -15,6 +14,7 @@ import SchemeDoc.Format.Util
 import SchemeDoc.Parser.R7RS
 
 import Text.Blaze.Html
+import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 
 -- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
@@ -62,11 +62,11 @@ mkLibrary e = makeErr e "found no library definition"
 
 -- Name of the library.
 -- Multiple identifiers are joined by a single ' ' character.
-libName :: Library -> Text
+libName :: Library -> T.Text
 libName (Library{libIdent=n}) = libName' n
 
 -- Whether the library exports the given **internal** identifier.
-libExports :: Library -> Text -> Bool
+libExports :: Library -> T.Text -> Bool
 libExports lib ident = any (\Export{internal=i} -> i == ident) $
                             libExport lib
 
@@ -84,12 +84,12 @@ expand e = throwSyntax e "not an include expression"
 expand' :: [Sexp] -> Bool -> IO Sexp
 expand' fileNames lower = do
     paths <- mapM (\case
-                    Str s -> pure $ if lower then toLower s else s
+                    Str s -> pure $ if lower then T.toLower s else s
                     e     -> throwSyntax e "expected list of strings")
              fileNames
 
-    exprs <- (mapM (parseFromFile scheme . unpack) paths)
-    pure $ List ([Id "begin"] ++ Prelude.concat exprs)
+    exprs <- (mapM (parseFromFile scheme . T.unpack) paths)
+    pure $ List ([Id "begin"] ++ concat exprs)
 
 -- Expand the library declaration.
 -- Returns all begin blocks, including includer expressions as expanded begin blocks.
@@ -104,12 +104,12 @@ libExpand (Library{libBody=decl}) = foldM libExpand' [] decl
 
 ------------------------------------------------------------------------
 
-newtype LibraryName = LibName [Text]
+newtype LibraryName = LibName [T.Text]
 instance Show LibraryName where
-    show = unpack . libName'
+    show = T.unpack . libName'
 
-libName' :: LibraryName -> Text
-libName' (LibName lst) = intercalate " " lst
+libName' :: LibraryName -> T.Text
+libName' (LibName lst) = T.intercalate " " lst
 
 -- Parses a Scheme library name.
 --
@@ -120,7 +120,7 @@ mkLibName (List exprs) = LibName <$>
     mapM (\x -> case x of
         Id  ident -> Right $ ident
         -- TODO: Only allow <uinteger 10> in library name
-        Number n  -> Right $ pack (show n :: String)
+        Number n  -> Right $ T.pack (show n :: String)
         e         -> makeErr e "expected identifier or uinteger") exprs
 mkLibName e = makeErr e "expected non-empty list"
 
@@ -128,7 +128,7 @@ mkLibName e = makeErr e "expected non-empty list"
 
 -- Export specification with internal name and external name.
 -- For exports which are not renamed both are the same.
-data ExportSpec = Export { internal :: Text, external :: Text }
+data ExportSpec = Export { internal :: T.Text, external :: T.Text }
     deriving (Show)
 
 -- Export declaration for a library declaration.
