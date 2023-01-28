@@ -96,7 +96,7 @@ formatProgComps comps = forM_ comps (\pc -> H.li $ compLink (P pc))
 
 tableOfContents :: [Component] -> Html
 tableOfContents comps = H.ul $ do
-    forM_ toc (\t -> case t of
+    forM_ toc (\case
         Heading s   -> H.li (compLink $ S s)
         Items   lst -> H.ul (formatProgComps lst))
   where
