@@ -42,11 +42,11 @@ parseOpts = Opts
 writeDoc :: Opts -> DocLib -> IO ()
 writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib@Library{libIdent=n}) = do
     (comps, failed) <- docDecls docLib
-    forM_ failed (\f -> hPutStrLn stderr $
-        "WARNING: Failed to find formatter for documented S-expression:\n\n\t" ++ show f ++ "\n")
+
+    forM_ failed
+        (\f -> warn $ "Failed to find formatter for:\n\n\t" ++ (show f) ++ "\n")
     forM_ (findUndocumented lib comps)
-          (\i -> hPutStrLn stderr $
-            "WARNING: Exported but undocumented internal identifier: " ++ (show i))
+        (\i -> warn $ "Exported but undocumented: " ++ (show i))
 
     let hTitle = if null optTitle
                     then show $ n
@@ -54,10 +54,11 @@ writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib@Library{libIdent=n}) = d
 
     let hbody = docFmt docLib comps
     let html = mkDoc hTitle optCss hbody
-
     if optOut == "-"
         then putStrLn html
         else writeFile optOut $ html ++ "\n"
+  where
+    warn msg = hPutStrLn stderr $ "WARNING: " ++ msg
 
 findDocLibs' :: [Sexp] -> IO ([DocLib])
 findDocLibs' exprs =
