@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Library
-    (Library(..), mkLibrary, libName, libExports, libExpand)
+    (Library(..), mkLibrary, libName, libExports, libExpand, ExportSpec(..))
 where
 
 import Control.Monad (foldM)

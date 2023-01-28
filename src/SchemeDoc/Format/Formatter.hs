@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Formatter
-    (findComponents, format, defFormatter, Component)
+    (findComponents, format, defFormatter, Component(..), Section(..), ProgComp(..))
 where
 
 import Data.Char (isSpace)

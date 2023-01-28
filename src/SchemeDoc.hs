@@ -1,6 +1,7 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc
-    (DocLib, findDocLibs, docDecls, docFmt, mkDoc)
+    (DocLib, findDocLibs, docDecls, docFmt, mkDoc, findUndocumented)
 where
 
 import SchemeDoc.Types
@@ -65,6 +66,7 @@ filterDocs = snd . walk filterDocs' (False, [])
         filterDocs' (True, acc) expr = (False, acc ++ [expr])
         filterDocs' b _ = b
 
+-- Find all S-expressions which are preceded by a documentation comment.
 findDocumented :: [Sexp] -> [Documented]
 findDocumented = toPairLst . filterDocs
     where
@@ -72,3 +74,13 @@ findDocumented = toPairLst . filterDocs
         toPairLst [] = []
         toPairLst ((DocComment s):expr:xs) = (s, expr) : toPairLst xs
         toPairLst _ = error "unreachable"
+
+-- Find all identifiers which are exported but not documented.
+findUndocumented :: Library -> [Component] -> [T.Text]
+findUndocumented lib comps = filter (\i -> not $ member i comps)
+                                $ map internal (libExport lib)
+  where
+    member :: T.Text -> [Component] -> Bool
+    member ident = any (\case
+            P ProgComp{compId=i} -> i == ident
+            S _ -> False)
