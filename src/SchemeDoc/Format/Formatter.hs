@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Formatter
+    (findComponents, format, defFormatter)
 where
 
 import Data.Char (isSpace)
@@ -113,8 +114,8 @@ mkProgComp :: Formatter -> Section -> T.Text -> Sexp -> Maybe ProgComp
 mkProgComp f parent desc expr = f expr >>=
     (\(Format i fn) -> Just $ ProgComp i parent desc fn)
 
-findComponents :: Section -> Formatter -> [Documented] -> ([Component], [Sexp])
-findComponents root formatFn docs =
+findComponents' :: Section -> Formatter -> [Documented] -> ([Component], [Sexp])
+findComponents' root formatFn docs =
     let (a, _, c) = foldl format' ([], root, []) docs in (a, c)
   where
     format' (acc, p, unFmt) (secRaw, com@(DocComment desc)) =
@@ -126,26 +127,22 @@ findComponents root formatFn docs =
             Just c   -> (acc ++ [P c], p, unFmt)
             Nothing  -> (acc, p, unFmt ++ [expr])
 
--- Format all documented S-expressions which are exported
--- by the given Scheme library using the given Formatter.
---
--- Returns pair of HTML for succesfully formatted S-expressions
--- and list of S-expressions which are documented but for which
--- no formatter was found.
-format :: Library -> Formatter -> [Documented] -> (Html, [Sexp])
-format lib fmtF docs = ( do
-                            H.h2 "Index"
-                            H.details $ do
-                                H.summary "Table of contents"
-                                tableOfContents finalComps
-                            forM_ finalComps (\case
-                                      P c -> compFormat c
-                                      S s -> sectionFormat s)
-                       , unFmt )
-  where
-    -- Find all program and section components in the input.
-    (comps, unFmt) = findComponents defaultSection fmtF docs
+-- Find all components recognized by the given formatter.
+-- Non-recognized S-expressions are also returned.
+findComponents :: Formatter -> [Documented] -> ([Component], [Sexp])
+findComponents = findComponents' defaultSection
 
+-- Format all components which are exported by the given library.
+format :: Library -> [Component] -> Html
+format lib comps = do
+    H.h2 "Index"
+    H.details $ do
+        H.summary "Table of contents"
+        tableOfContents finalComps
+    forM_ finalComps (\case
+              P c -> compFormat c
+              S s -> sectionFormat s)
+  where
     -- Exclude any non-exported program components.
     exportedComps = filter (\case
                                 P c -> libExports lib $ compId c

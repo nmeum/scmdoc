@@ -38,8 +38,10 @@ docDecls (_, lib) = libExpand lib >>= pure . findDocumented
 -- for which no formatter was found.
 docFmt :: DocLib -> [Documented] -> (Html, [Sexp])
 docFmt (libDesc, lib) decls =
-    let (h, f) = format lib defFormatter decls in
-        ((fmtFunc (fmt lib) $ libDesc) >> h, f)
+    let html = format lib comps in
+        ((fmtFunc (fmt lib) $ libDesc) >> html, unFmt)
+  where
+    (comps, unFmt) = findComponents defFormatter decls
 
 -- Create an HTML document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String
