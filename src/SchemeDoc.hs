@@ -30,18 +30,18 @@ findDocLibs exprs = foldr fn (Right []) (findDocumented exprs)
 
 -- Find all documented declarations of a library.
 -- Performs file system accesses to expand includes.
-docDecls :: DocLib -> IO [Documented]
-docDecls (_, lib) = libExpand lib >>= pure . findDocumented
+docDecls :: DocLib -> IO ([Component], [Sexp])
+docDecls (_, lib) = do
+    sexprs <- libExpand lib
+    pure $ findComponents defFormatter (findDocumented sexprs)
 
 -- Expand a documented library wrt. its declarations.
 -- Returns resulting HTML and list of S-expressions
 -- for which no formatter was found.
-docFmt :: DocLib -> [Documented] -> (Html, [Sexp])
-docFmt (libDesc, lib) decls =
+docFmt :: DocLib -> [Component] -> Html
+docFmt (libDesc, lib) comps =
     let html = format lib comps in
-        ((fmtFunc (fmt lib) $ libDesc) >> html, unFmt)
-  where
-    (comps, unFmt) = findComponents defFormatter decls
+        (fmtFunc (fmt lib) $ libDesc) >> html
 
 -- Create an HTML document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String

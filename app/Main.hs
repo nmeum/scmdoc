@@ -41,16 +41,17 @@ parseOpts = Opts
 
 writeDoc :: Opts -> DocLib -> IO ()
 writeDoc (Opts optCss optTitle optOut _) docLib@(_, Library{libIdent=n}) = do
-    decls <- docDecls docLib
+    (comps, failed) <- docDecls docLib
+    forM_ failed (\f -> hPutStrLn stderr $
+        "WARNING: Failed to find formatter for documented S-expression:\n\n\t" ++ show f ++ "\n")
+
     let hTitle = if null optTitle
                     then show $ n
                     else optTitle
 
-    let (hbody, failed) = docFmt docLib decls
-    forM_ failed (\f -> hPutStrLn stderr $
-        "WARNING: Failed to find formatter for documented S-expression:\n\n\t" ++ show f ++ "\n")
-
+    let hbody = docFmt docLib comps
     let html = mkDoc hTitle optCss hbody
+
     if optOut == "-"
         then putStrLn html
         else writeFile optOut $ html ++ "\n"
