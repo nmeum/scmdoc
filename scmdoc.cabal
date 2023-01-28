@@ -4,7 +4,7 @@ version:            0.1.0.0
 synopsis:           R7RS Scheme documentation tool
 description:        Inline documentation tool for R7RS Scheme based on source code comments
 
-license:            AGPL-3.0-or-later
+license:            AGPL-3.0-only
 license-file:       LICENSE
 author:             Sören Tempel
 maintainer:         soeren+git@soeren-tempel.net
