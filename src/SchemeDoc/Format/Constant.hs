@@ -11,11 +11,11 @@ data Constant = Constant { consName  :: T.Text
     deriving (Show)
 
 instance Formatable Constant where
-    fmt (Constant n _) = Format n
-        (\comment -> do
+    fmt (Constant n _) desc =
+        Declaration n desc $ do
                         component "constant " n
-                        fromMkd comment
-                        htmlSexp (Id n))
+                        fromMkd desc
+                        htmlSexp (Id n)
 
 -- Parses a Scheme definition.
 --

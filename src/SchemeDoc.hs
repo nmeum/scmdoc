@@ -42,7 +42,7 @@ docDecls (_, lib) = do
 docFmt :: DocLib -> [Component] -> Html
 docFmt (libDesc, lib) comps =
     let html = format lib comps in
-        (fmtFunc (fmt lib) $ libDesc) >> html
+        (declFmt $ fmt lib libDesc) >> html
 
 -- Create an HTML document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String
@@ -82,5 +82,5 @@ findUndocumented lib comps = filter (\i -> not $ member i comps)
   where
     member :: T.Text -> [Component] -> Bool
     member ident = any (\case
-            P ProgComp{compId=i} -> i == ident
+            D Declaration{declId=i} -> i == ident
             S _ -> False)

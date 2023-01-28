@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module SchemeDoc.Format.Formatter
-    (findComponents, format, defFormatter, Component(..), Section(..), ProgComp(..))
+    (findComponents, format, defFormatter, Component(..), Section(..))
 where
 
 import Data.Char (isSpace)
@@ -19,12 +19,6 @@ import Text.Blaze.Html
 import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
-
--- Program component (i.e. S-expression) suitable for formatting.
--- For example, procedure definitions, library declarations, et cetera.
-data ProgComp = ProgComp { compId     :: T.Text
-                         , compDesc   :: T.Text
-                         , compFunc   :: FormatF }
 
 -- Section represents a section comment in the source.
 -- Each section comment has a title and a description.
@@ -46,13 +40,23 @@ sectionComment t = if T.length t >= 1 && T.head t == sectionChar
                        then Just (ltrim $ T.tail t)
                        else Nothing
 
+-- Format a section comment as HTML.
+sectionFmt :: Section -> Html
+sectionFmt s@(Section n desc) = do
+    -- TODO: Add <section> tags for each H2
+    H.h2 ! A.id (textValue $ compAnchor (S s))
+         $ (toHtml n)
+    H.p  (toHtml desc)
+
+------------------------------------------------------------------------
+
 -- Comment in the documented source code.
--- This is either a program component (i.e. an S-expression) or a section comment.
-data Component = P ProgComp | S Section
+-- This is either a declaration or a section comment.
+data Component = D Declaration | S Section
 
 -- Return unique anchor for a compoment.
 compAnchor :: Component -> T.Text
-compAnchor (P c) = compId c -- TODO: Ensure that this is aligned with format function
+compAnchor (D c) = declId c -- TODO: Ensure that this is aligned with format function
 compAnchor (S (Section n _)) = "section-" `T.append` toAnchor n
   where
     toAnchor :: T.Text -> T.Text
@@ -65,53 +69,35 @@ compLink c = do
         $ (toHtml $ compName c)
   where
     compName :: Component -> T.Text
-    compName (P c') = compId c'
+    compName (D c') = declId c'
     compName (S (Section n _)) = n
-
--- Format a program component as HTML.
-compFormat :: ProgComp -> Html
-compFormat c = (compFunc c) $ compDesc c
-
--- Format a section comment as HTML.
-sectionFormat :: Section -> Html
-sectionFormat s@(Section n desc) = do
-    -- TODO: Add <section> tags for each H2
-    H.h2 ! A.id (textValue $ compAnchor (S s))
-         $ (toHtml n)
-    H.p  (toHtml desc)
 
 ------------------------------------------------------------------------
 
 -- ToC represents a table of contents with a depth of one.
-data ToC = Heading Section | Items [ProgComp]
+data ToC = Heading Section | Items [Declaration]
 
 tableOfContents' :: [Component] -> [ToC] -> [ToC]
-tableOfContents' ((P pc):xs) ((Items lst):toc) = tableOfContents' xs (toc ++ [(Items $ lst ++ [pc])])
-tableOfContents' ((P pc):xs) toc               = tableOfContents' xs (toc ++ [(Items [pc])])
+tableOfContents' ((D pc):xs) ((Items lst):toc) = tableOfContents' xs (toc ++ [(Items $ lst ++ [pc])])
+tableOfContents' ((D pc):xs) toc               = tableOfContents' xs (toc ++ [(Items [pc])])
 tableOfContents' ((S sec):xs) toc              = tableOfContents' xs (toc ++ [(Heading sec)])
 tableOfContents' [] toc                        = toc
 
-formatProgComps :: [ProgComp] -> Html
-formatProgComps comps = forM_ comps (\pc -> H.li $ compLink (P pc))
-
 tableOfContents :: [Component] -> Html
 tableOfContents comps = H.ul $ do
-    forM_ toc (\case
+    forM_ (tableOfContents' comps []) (\case
         Heading s   -> H.li (compLink $ S s)
-        Items   lst -> H.ul (formatProgComps lst))
+        Items   lst -> H.ul (formatItems lst))
   where
-    toc = tableOfContents' comps []
+    formatItems :: [Declaration] -> Html
+    formatItems decls = forM_ decls (\pc -> H.li $ compLink (D pc))
 
 ------------------------------------------------------------------------
 
 -- The default Formatter, can be extented via the Maybe applicative.
-defFormatter :: Sexp -> Maybe Format
-defFormatter sexp = fmt <$> mkConstant sexp
-                <|> fmt <$> mkProcedure sexp
-
-mkProgComp :: Formatter -> T.Text -> Sexp -> Maybe ProgComp
-mkProgComp f desc expr = f expr >>=
-    (\(Format i fn) -> Just $ ProgComp i desc fn)
+defFormatter :: Sexp -> T.Text -> Maybe Declaration
+defFormatter sexp desc = ((flip fmt) desc) <$> mkConstant sexp
+                     <|> ((flip fmt) desc) <$> mkProcedure sexp
 
 -- Find all components recognized by the given formatter.
 -- Non-recognized S-expressions are also returned.
@@ -123,8 +109,8 @@ findComponents formatFn docs = foldl foldFunc ([], []) docs
             Just sec -> let s = Section sec desc in (acc ++ [S s], unFmt)
             Nothing  -> (acc, unFmt ++ [com])
     foldFunc (acc, unFmt) (desc, expr) =
-        case mkProgComp formatFn desc expr of
-            Just c   -> (acc ++ [P c], unFmt)
+        case formatFn expr desc of
+            Just c   -> (acc ++ [D c], unFmt)
             Nothing  -> (acc, unFmt ++ [expr])
 
 -- Format all components which are exported by the given library.
@@ -135,17 +121,17 @@ format lib comps = do
         H.summary "Table of contents"
         tableOfContents finalComps
     forM_ finalComps (\case
-              P c -> compFormat c
-              S s -> sectionFormat s)
+              D c -> declFmt c
+              S s -> sectionFmt s)
   where
     -- Exclude any non-exported program components.
     exportedComps = filter (\case
-                                P c -> libExports lib $ compId c
+                                D c -> libExports lib $ declId c
                                 S _ -> True) comps
 
     -- Extra components to prepend to the component list.
     -- Neccessary to ensure that HTML heading structure is always valid.
-    extraComps = if any (\case { P _ -> False ;  S _ -> True }) exportedComps
+    extraComps = if any (\case { D _ -> False ;  S _ -> True }) exportedComps
                         then []
                         else [S defaultSection]
 

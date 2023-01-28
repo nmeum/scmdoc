@@ -14,11 +14,11 @@ data Procedure = Procedure { name   :: T.Text
     deriving (Show)
 
 instance Formatable Procedure where
-    fmt (Procedure{name=n, params=p}) = Format n
-        (\comment -> do
+    fmt (Procedure{name=n, params=p}) desc =
+        Declaration n desc $ do
                         component "procedure" n
-                        fromMkd comment
-                        htmlSexp $ List ([Id n] ++ map Id p))
+                        fromMkd desc
+                        htmlSexp $ List ([Id n] ++ map Id p)
 
 -- Parses a Scheme procedure definition.
 --

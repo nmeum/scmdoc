@@ -24,10 +24,9 @@ data Library = Library { libIdent  :: LibraryName
     deriving (Show)
 
 instance Formatable Library where
-    fmt lib = Format (libName lib)
-        (\comment -> do
+    fmt lib desc = Declaration (libName lib) desc $ do
                         H.h1 $ toHtml (libName lib)
-                        fromMkd comment)
+                        fromMkd desc
 
 -- Parse a Scheme library definition.
 --
