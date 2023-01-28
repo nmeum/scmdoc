@@ -186,7 +186,7 @@ comment = skip $
 --
 docComment :: Parser Sexp
 docComment = fmap (DocComment . trim . T.concat) $
-    (many1 $ P.string ";;>" >> (T.pack <$> manyTill anyChar endOfLine))
+    (many1 $ (try $ P.string ";;>") >> (T.pack <$> manyTill anyChar endOfLine))
 
 -- Sign subsequent for peculiar identifier.
 --

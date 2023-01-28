@@ -183,6 +183,11 @@ exprParser = testGroup "Expression parser"
             $ parse ";;> foo\n;;> bar\n;;> baz\n(define x 2)"
 
         assertEqual
+            "Interleaved documentation comment"
+            (Right $ [DocComment "foo", DocComment "bar"])
+            $ parse ";;> foo\n;;\n;;> bar\n"
+
+        assertEqual
             "Whitespaces at start"
             (Right $ [Number 42])
             $ parse "  42"
