@@ -23,7 +23,6 @@ import qualified Text.Blaze.Html5.Attributes as A
 -- Program component (i.e. S-expression) suitable for formatting.
 -- For example, procedure definitions, library declarations, et cetera.
 data ProgComp = ProgComp { compId     :: T.Text
-                         , compParent :: Section
                          , compDesc   :: T.Text
                          , compFunc   :: FormatF }
 
@@ -110,27 +109,23 @@ defFormatter :: Sexp -> Maybe Format
 defFormatter sexp = fmt <$> mkConstant sexp
                 <|> fmt <$> mkProcedure sexp
 
-mkProgComp :: Formatter -> Section -> T.Text -> Sexp -> Maybe ProgComp
-mkProgComp f parent desc expr = f expr >>=
-    (\(Format i fn) -> Just $ ProgComp i parent desc fn)
-
-findComponents' :: Section -> Formatter -> [Documented] -> ([Component], [Sexp])
-findComponents' root formatFn docs =
-    let (a, _, c) = foldl format' ([], root, []) docs in (a, c)
-  where
-    format' (acc, p, unFmt) (secRaw, com@(DocComment desc)) =
-        case sectionComment secRaw of
-            Just sec -> let s = Section sec desc in (acc ++ [S s], s, unFmt)
-            Nothing  -> (acc, p, unFmt ++ [com])
-    format' (acc, p, unFmt) (desc, expr) =
-        case mkProgComp formatFn p desc expr of
-            Just c   -> (acc ++ [P c], p, unFmt)
-            Nothing  -> (acc, p, unFmt ++ [expr])
+mkProgComp :: Formatter -> T.Text -> Sexp -> Maybe ProgComp
+mkProgComp f desc expr = f expr >>=
+    (\(Format i fn) -> Just $ ProgComp i desc fn)
 
 -- Find all components recognized by the given formatter.
 -- Non-recognized S-expressions are also returned.
 findComponents :: Formatter -> [Documented] -> ([Component], [Sexp])
-findComponents = findComponents' defaultSection
+findComponents formatFn docs = foldl foldFunc ([], []) docs
+  where
+    foldFunc (acc, unFmt) (secRaw, com@(DocComment desc)) =
+        case sectionComment secRaw of
+            Just sec -> let s = Section sec desc in (acc ++ [S s], unFmt)
+            Nothing  -> (acc, unFmt ++ [com])
+    foldFunc (acc, unFmt) (desc, expr) =
+        case mkProgComp formatFn desc expr of
+            Just c   -> (acc ++ [P c], unFmt)
+            Nothing  -> (acc, unFmt ++ [expr])
 
 -- Format all components which are exported by the given library.
 format :: Library -> [Component] -> Html
