@@ -193,8 +193,8 @@ comment = skip $
 --  <doc comment> → ;;> <all subsequent characters up to a line ending>
 --
 docComment :: Parser Sexp
-docComment = fmap (DocComment . trim . T.concat) $
-    (many1 $ (try $ P.string ";;>") >> (T.pack <$> manyTill anyChar endOfLine))
+docComment = fmap (DocComment . T.concat) $
+    (many1 $ (try $ P.string ";;>") >> (T.pack <$> manyTill' anyChar endOfLine))
 
 -- Sign subsequent for peculiar identifier.
 --

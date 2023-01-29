@@ -27,6 +27,14 @@ terminatedBy p1 p2 = do
     _ <- p2
     return r
 
+-- Like manyTill but preserve the terminator in the return value.
+manyTill' :: Parser a -> Parser a -> Parser [a]
+manyTill' p end = scan
+  where
+    scan  = do{ x <- end; return [x] }
+          <|>
+            do{ x <- p; xs <- scan; return (x:xs) }
+
 ------------------------------------------------------------------------
 
 -- Remove all Nothing value from a List of Maybe monads.

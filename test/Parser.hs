@@ -174,17 +174,17 @@ exprParser = testGroup "Expression parser"
 
         assertEqual
             "Documentation comment"
-            (Right $ [DocComment "my comment", List [Id "define",Id "x",Number 2]])
+            (Right $ [DocComment " my comment\n", List [Id "define",Id "x",Number 2]])
             $ parse ";;> my comment\n(define x 2)"
 
         assertEqual
             "Multi-line documentation comment"
-            (Right $ [DocComment "foo bar baz", List [Id "define", Id "x", Number 2]])
+            (Right $ [DocComment " foo\n bar\n baz\n", List [Id "define", Id "x", Number 2]])
             $ parse ";;> foo\n;;> bar\n;;> baz\n(define x 2)"
 
         assertEqual
             "Interleaved documentation comment"
-            (Right $ [DocComment "foo", DocComment "bar"])
+            (Right $ [DocComment " foo\n", DocComment " bar\n"])
             $ parse ";;> foo\n;;\n;;> bar\n"
 
         assertEqual
