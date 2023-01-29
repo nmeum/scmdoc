@@ -22,7 +22,7 @@ data Variable = Variable { varName  :: T.Text -- ^ Identifier, i.e. variable nam
 instance Formatable Variable where
     fmt (Variable n _) desc =
         Declaration n desc $ do
-                        component "variable " n
+                        component "constant " n
                         fromMkd desc
                         htmlSexp (Id n)
 
