@@ -7,7 +7,6 @@ module SchemeDoc.Parser.R7RS
     (scheme, parseFromFile)
 where
 
-import SchemeDoc.Util
 import SchemeDoc.Types
 import SchemeDoc.Parser.Util
 import SchemeDoc.Parser.Number

@@ -8,7 +8,6 @@ module SchemeDoc.Format.Types
 where
 
 import SchemeDoc.Types
-import SchemeDoc.Util (ltrim)
 import Data.Char (isSpace)
 import qualified Data.Text as T
 
@@ -42,6 +41,10 @@ data Section = Section
 -- Character used to identify section comments.
 sectionChar :: Char
 sectionChar = '|'
+
+-- Remove all leading ASCII space characters.
+ltrim :: T.Text -> T.Text
+ltrim = T.dropWhile isSpace
 
 -- | If the given comment text constitutes a 'Section' title
 -- return the title, otherwise return 'Nothing'.
