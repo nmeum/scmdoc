@@ -16,9 +16,8 @@ Lastly, a preliminary HTML generation backend is available.
 
 ## Installation
 
-This software can be installed using the following commands:
+This software can be installed by cloning the repository and running the following commands:
 
-    $ git clone git://git.8pit.net/scmdoc.git
     $ cd scmdoc
     $ cabal install
 
