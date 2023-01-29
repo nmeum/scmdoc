@@ -1,3 +1,7 @@
+## Demo
+
+A sample documentation for [chibi parse][chibi parse] is available: https://files.8pit.net/scmdoc-demo/
+
 ## Motivation
 
 Tooling for inline source code documentation of Scheme code is rare.
@@ -140,3 +144,4 @@ Furthermore, this code presently includes the Scheme number parser from [Husk Sc
 [cssbed web]: https://www.cssbed.com/
 [greenfield classless]: https://ubershmekel.medium.com/the-next-css-frontier-classless-5e66f3f25fdd
 [water.css web]: https://watercss.kognise.dev/
+[chibi parse]: https://synthcode.com/scheme/chibi/lib/chibi/parse.html
