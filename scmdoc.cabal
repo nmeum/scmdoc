@@ -65,6 +65,7 @@ test-suite scmdoc-test
     main-is:          Main.hs
     other-modules:    Parser
                     , Library
+                    , Formatter
                     , Util
 
     build-depends:

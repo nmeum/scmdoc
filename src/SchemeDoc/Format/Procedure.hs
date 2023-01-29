@@ -21,7 +21,7 @@ data Procedure = Procedure { name   :: T.Text   -- ^ Identifier, i.e. procedure 
                            , params :: [T.Text] -- ^ Procedure parameters.
                            , body   :: [Sexp]   -- ^ Procedure body.
                            }
-    deriving (Show)
+    deriving (Eq, Show)
 
 instance Formatable Procedure where
     fmt (Procedure{name=n, params=p}) desc =

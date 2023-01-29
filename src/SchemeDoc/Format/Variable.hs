@@ -17,7 +17,7 @@ import qualified Data.Text as T
 data Variable = Variable { varName  :: T.Text -- ^ Identifier, i.e. variable name.
                          , varValue :: Sexp   -- ^ Value assigned to the variable name.
                          }
-    deriving (Show)
+    deriving (Eq, Show)
 
 instance Formatable Variable where
     fmt (Variable n _) desc =
