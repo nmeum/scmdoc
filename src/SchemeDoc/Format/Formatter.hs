@@ -1,5 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+
+-- | This module provides functions for applying a 'Formatter' to
+-- create 'Component's for given S-expressions. Furthermore, an
+-- HTML document, for recognized 'Component's, can be generated
+-- using this module.
 module SchemeDoc.Format.Formatter
     (findComponents, format, defFormatter)
 where
@@ -10,7 +15,7 @@ import Control.Monad
 import SchemeDoc.Types
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Procedure
-import SchemeDoc.Format.Constant
+import SchemeDoc.Format.Variable
 import SchemeDoc.Format.Library
 
 import Text.Blaze.Html
@@ -37,12 +42,12 @@ tableOfContents comps = H.ul $ do
 
 ------------------------------------------------------------------------
 
--- The default Formatter, can be extented via the Maybe applicative.
+-- | The default 'Formatter', can be extented via the 'Maybe' applicative.
 defFormatter :: Sexp -> T.Text -> Maybe Declaration
-defFormatter sexp desc = ((flip fmt) desc) <$> mkConstant sexp
+defFormatter sexp desc = ((flip fmt) desc) <$> mkVariable sexp
                      <|> ((flip fmt) desc) <$> mkProcedure sexp
 
--- Find all components recognized by the given formatter.
+-- | Find all 'Component's recognized by the given 'Formatter'.
 -- Non-recognized S-expressions are also returned.
 findComponents :: Formatter -> [Documented] -> ([Component], [Sexp])
 findComponents formatFn docs = foldl foldFunc ([], []) docs
@@ -56,7 +61,7 @@ findComponents formatFn docs = foldl foldFunc ([], []) docs
             Just c   -> (acc ++ [D c], unFmt)
             Nothing  -> (acc, unFmt ++ [expr])
 
--- Format all components which are exported by the given library.
+-- | Format all 'Component's which are exported by the given 'Library'.
 format :: Library -> [Component] -> Html
 format lib comps = do
     H.h2 "Index"

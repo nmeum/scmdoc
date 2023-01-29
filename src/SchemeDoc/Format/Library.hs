@@ -1,13 +1,24 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+
+-- | This module implements a 'Formatter' for Scheme library definitions.
+--
+-- For example:
+--
+-- > (define-library (math arithmetic)
+-- >   (export my-proc)
+-- >
+-- >   (begin
+-- >     (define (my-proc x)
+-- >       (* x 2))))
+--
 module SchemeDoc.Format.Library
-    (Library(..), mkLibrary, libName, libExports, libExpand, ExportSpec(..))
+    (Library(..), mkLibrary, libName, libExports, libExpand, ExportSpec(..), LibraryName)
 where
 
 import Control.Monad (foldM)
 
 import SchemeDoc.Types
-import SchemeDoc.Util
 import SchemeDoc.Error
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Util
@@ -17,10 +28,11 @@ import Text.Blaze.Html
 import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 
--- An R⁷RS Scheme library as defined in Section 5.6 of the standard.
-data Library = Library { libIdent  :: LibraryName
-                       , libExport :: [ExportSpec] -- TODO: Make this a set
-                       , libBody   :: [Sexp] }
+-- | An R7RS Scheme library as defined in Section 5.6 of the standard.
+data Library = Library { libIdent  :: LibraryName  -- ^ Library name.
+                       , libExport :: [ExportSpec] -- ^ Export declaration of the library.
+                       , libBody   :: [Sexp]       -- ^ Body of the library.
+                       }
     deriving (Show)
 
 instance Formatable Library where
@@ -28,22 +40,22 @@ instance Formatable Library where
                         H.h1 $ toHtml (libName lib)
                         fromMkd desc
 
--- Parse a Scheme library definition.
+-- | Parse a Scheme library definition.
 --
---  <library> → (define-library <library name>
---      <library declaration>*)
+-- > <library> → (define-library <library name>
+-- >     <library declaration>*)
 --
 -- where
 --
---  <library name part> → <identifier> | <uinteger 10>
---      <library declaration> → (export <export spec>*)
---      | <import declaration>
---      | (begin <command or definition>*)
---      | <includer>
---      | (include-library-declarations <string>+)
---      | (cond-expand <cond-expand clause>+)
---      | (cond-expand <cond-expand clause>+
---          (else <library declaration>*))
+-- > <library name part> → <identifier> | <uinteger 10>
+-- >     <library declaration> → (export <export spec>*)
+-- >     | <import declaration>
+-- >     | (begin <command or definition>*)
+-- >     | <includer>
+-- >     | (include-library-declarations <string>+)
+-- >     | (cond-expand <cond-expand clause>+)
+-- >     | (cond-expand <cond-expand clause>+
+-- >         (else <library declaration>*))
 --
 mkLibrary :: Sexp -> Either SyntaxError Library
 mkLibrary (List ((Id "define-library"):libraryName:xs)) = do
@@ -59,12 +71,12 @@ mkLibrary (List ((Id "define-library"):libraryName:xs)) = do
 -- TODO: Handling of cond-expand?!
 mkLibrary e = makeErr e "found no library definition"
 
--- Name of the library.
--- Multiple identifiers are joined by a single ' ' character.
+-- | Name of the 'Library'. Multiple identifiers, within the library
+-- name, are joined by a single @' '@ character.
 libName :: Library -> T.Text
 libName (Library{libIdent=n}) = libName' n
 
--- Whether the library exports the given **internal** identifier.
+-- | Whether the 'Library' exports the given **internal** identifier.
 libExports :: Library -> T.Text -> Bool
 libExports lib ident = any (\Export{internal=i} -> i == ident) $
                             libExport lib
@@ -87,11 +99,11 @@ expand' fileNames lower = do
                     e     -> throwSyntax e "expected list of strings")
              fileNames
 
-    exprs <- (mapM (parseFromFile scheme . T.unpack) paths)
+    exprs <- (mapM (parseFromFile . T.unpack) paths)
     pure $ List ([Id "begin"] ++ concat exprs)
 
--- Expand the library declaration.
--- Returns all begin blocks, including includer expressions as expanded begin blocks.
+-- | Expand the library declaration. Returns all begin blocks, including
+-- includer expressions as expanded begin blocks.
 libExpand :: Library -> IO [Sexp]
 libExpand (Library{libBody=decl}) = foldM libExpand' [] decl
     where
@@ -103,6 +115,7 @@ libExpand (Library{libBody=decl}) = foldM libExpand' [] decl
 
 ------------------------------------------------------------------------
 
+-- | Name of a R7RS Scheme library.
 newtype LibraryName = LibName [T.Text]
 instance Show LibraryName where
     show = T.unpack . libName'
@@ -125,7 +138,7 @@ mkLibName e = makeErr e "expected non-empty list"
 
 ------------------------------------------------------------------------
 
--- Export specification with internal name and external name.
+-- | Export specification with internal name and external name.
 -- For exports which are not renamed both are the same.
 data ExportSpec = Export { internal :: T.Text, external :: T.Text }
     deriving (Show)

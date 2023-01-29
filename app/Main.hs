@@ -13,7 +13,6 @@ import SchemeDoc.Error
 import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
 import SchemeDoc.Format.Library
-import SchemeDoc.Util (parseFromFile)
 
 data Opts = Opts
     { css     :: String
@@ -70,7 +69,7 @@ main' :: Opts -> IO ()
 main' opts@(Opts{library=optFile}) =
   catch
    ( do
-     source <- parseFromFile scheme optFile
+     source <- parseFromFile optFile
 
      -- Expand all includes relative to given Scheme file.
      setCurrentDirectory $ takeDirectory optFile

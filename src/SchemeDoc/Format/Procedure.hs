@@ -1,5 +1,13 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+
+-- | This module implement a 'Formatter' for Scheme procedure definitions.
+--
+-- For example:
+--
+-- > (define (my-proc x1 x2)
+-- >    (* x1 x2))
+--
 module SchemeDoc.Format.Procedure where
 
 import qualified Data.Text as T
@@ -8,9 +16,11 @@ import SchemeDoc.Types
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Util
 
-data Procedure = Procedure { name   :: T.Text
-                           , params :: [T.Text]
-                           , body   :: [Sexp] }
+-- | A R7RS Scheme procedure definition.
+data Procedure = Procedure { name   :: T.Text   -- ^ Identifier, i.e. procedure name.
+                           , params :: [T.Text] -- ^ Procedure parameters.
+                           , body   :: [Sexp]   -- ^ Procedure body.
+                           }
     deriving (Show)
 
 instance Formatable Procedure where
@@ -20,15 +30,14 @@ instance Formatable Procedure where
                         fromMkd desc
                         htmlSexp $ List ([Id n] ++ map Id p)
 
--- Parses a Scheme procedure definition.
+-- | Parses a Scheme procedure definition.
 --
---  <procedure> → (define (<identifier> <def formals>) <body>)
+-- > <procedure> → (define (<identifier> <def formals>) <body>)
 --
 -- where
 --
---  <def formals> → <identifier>* | <identifier>* . <identifier>
+-- > <def formals> → <identifier>* | <identifier>* . <identifier>
 --
--- TODO: Support the latter def formal rule.
 mkProcedure :: Sexp -> Maybe Procedure
 mkProcedure (List ((Id "define"):(List ((Id defid):arglst)):bodylst)) =
     ((flip $ Procedure defid) bodylst) <$>

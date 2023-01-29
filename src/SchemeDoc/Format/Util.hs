@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+
+-- | Utility functions for creating custom 'SchemeDoc.Format.Types.Formatter's.
 module SchemeDoc.Format.Util where
 
 import CMark
@@ -9,10 +11,11 @@ import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
--- Fromat an S-expression in an HTML code block.
+-- | Format an S-expression in an 'Html' code block.
 htmlSexp :: Sexp -> Html
 htmlSexp = H.pre . H.code . toHtml . show
 
+-- | Format a component with the given type prefix and the given name.
 component :: T.Text -> T.Text -> Html
 component prefix name = do
     H.h3 $ do
@@ -21,6 +24,6 @@ component prefix name = do
             ! A.href (textValue (T.cons '#' name))
             $ toHtml name
 
--- Convert from Markdown to Html.
+-- | Convert from Markdown to Html.
 fromMkd :: T.Text -> Html
 fromMkd s = preEscapedToHtml $ commonmarkToHtml [] s

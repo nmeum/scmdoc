@@ -1,16 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
-module SchemeDoc.Parser.R7RS (scheme) where
+
+-- | This module implements parser combinators for the R7RS Scheme
+-- language standard. The module implements a parser for the formal
+-- syntax defined in Section 7.1 of the aformentioned standard.
+module SchemeDoc.Parser.R7RS
+    (scheme, parseFromFile)
+where
 
 import SchemeDoc.Util
 import SchemeDoc.Types
 import SchemeDoc.Parser.Util
 import SchemeDoc.Parser.Number
+import SchemeDoc.Error
 
 import Data.Char
+import Control.Exception (throwIO)
 import qualified Data.Text as T
 
 import Text.Parsec.Char (endOfLine)
-import Text.ParserCombinators.Parsec hiding (space, spaces, string)
+import Text.ParserCombinators.Parsec hiding (space, spaces, string, parseFromFile)
 import qualified Text.ParserCombinators.Parsec as P
 
 -- Intraline whitespace.
@@ -362,10 +370,22 @@ lexeme p = do
     _ <- lexComment
     return r
 
--- Parse an R⁷RS Scheme program.
+-- | Parse a Scheme program as defined in the [R7RS-small](https://small.r7rs.org/) standard.
 scheme :: Parser [Sexp]
 scheme = do
     _ <- spaces
     _ <- lexComment
     manyTill sexp eof
 -- TODO: Don't dupilcate lexeme here
+
+------------------------------------------------------------------------
+
+-- | Utility function for parsing a Scheme source code file.
+-- Behaves like 'Text.Parsec.String.parseFromFile' but unconditionally
+-- uses the 'scheme' parser and throws an 'ErrParser' exception on error.
+parseFromFile :: FilePath -> IO [Sexp]
+parseFromFile fileName = do
+    r <- P.parseFromFile scheme fileName
+    case r of
+        Left err -> throwIO $ ErrParser err
+        Right s  -> pure s
