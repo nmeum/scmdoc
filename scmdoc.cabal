@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               scmdoc
-version:            0.1.0.0
+version:            0.1.0
 synopsis:           R7RS Scheme documentation tool
 description:        Inline documentation tool for R7RS Scheme based on source code comments
 
