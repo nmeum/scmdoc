@@ -35,7 +35,7 @@ library
     default-language: Haskell2010
 
     build-depends:
-        base         ^>=4.17.0.0,
+        base         >=4.15.0.0 && <=4.18.0.0,
         parsec       ^>=3.1.15.1,
         blaze-html   ^>=0.9.1.2,
         cmark-gfm    ^>=0.2.5,
@@ -48,7 +48,7 @@ executable scmdoc
     default-language: Haskell2010
 
     build-depends:
-        base                 ^>=4.17.0.0,
+        base                 >=4.15.0.0 && <=4.18.0.0,
         parsec               ^>=3.1.15.1,
         directory            ^>=1.3.8.0,
         filepath             ^>=1.4.100.0,
@@ -68,7 +68,7 @@ test-suite scmdoc-test
                     , Util
 
     build-depends:
-        base         ^>=4.17.0.0,
+        base         >=4.15.0.0 && <=4.18.0.0,
         tasty        ^>=1.4.2.3,
         tasty-hunit  ^>=0.10.0.3,
         parsec       ^>=3.1.15.1,
