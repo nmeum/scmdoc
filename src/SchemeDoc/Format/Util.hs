@@ -3,7 +3,7 @@
 -- | Utility functions for creating custom 'SchemeDoc.Format.Types.Formatter's.
 module SchemeDoc.Format.Util where
 
-import CMark
+import CMarkGFM
 import SchemeDoc.Types
 import Text.Blaze.Html
 import qualified Data.Text as T
@@ -26,4 +26,4 @@ component prefix name = do
 
 -- | Convert from Markdown to Html.
 fromMkd :: T.Text -> Html
-fromMkd s = preEscapedToHtml $ commonmarkToHtml [] s
+fromMkd s = preEscapedToHtml $ commonmarkToHtml [] [] s

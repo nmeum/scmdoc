@@ -20,9 +20,8 @@ Lastly, a preliminary HTML generation backend is available.
 
 ## Installation
 
-This software can be installed by cloning the repository and running the following commands:
+This software is known to compile with GHC 9.4.4 and can be installed by running the following commands inside the repository:
 
-    $ cd scmdoc
     $ cabal install
 
 Afterwards, the binary should be available via `~/.cabal/bin/scmdoc`.
