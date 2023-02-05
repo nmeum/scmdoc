@@ -46,6 +46,14 @@ sectionChar = '|'
 ltrim :: T.Text -> T.Text
 ltrim = T.dropWhile isSpace
 
+-- Remove all trailing ASCII space characters.
+rtrim :: T.Text -> T.Text
+rtrim = T.dropWhileEnd isSpace
+
+-- Remove all trailing and leading ASCII space characters.
+trim :: T.Text -> T.Text
+trim = rtrim . ltrim
+
 -- | If the given comment text constitutes a 'Section' title
 -- return the title, otherwise return 'Nothing'.
 sectionComment :: T.Text -> Maybe T.Text
@@ -78,7 +86,7 @@ compAnchor (D c) = declId c -- TODO: Ensure that this is aligned with format fun
 compAnchor (S (Section n _)) = "section-" `T.append` toAnchor n
   where
     toAnchor :: T.Text -> T.Text
-    toAnchor = T.map (\c -> if isSpace c then '-' else c) . T.toLower
+    toAnchor = T.map (\c -> if isSpace c then '-' else c) . T.toLower . trim
 
 -- | Generate an anchor tag which links to a given 'Component'.
 compLink :: Component -> Html
