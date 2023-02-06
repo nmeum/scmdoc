@@ -10,6 +10,7 @@ where
 import SchemeDoc.Types
 import Data.Char (isSpace)
 import qualified Data.Text as T
+import Control.Monad (unless)
 
 import Text.Blaze.Html
 import qualified Text.Blaze.Html5 as H
@@ -72,7 +73,8 @@ sectionFmt s@(Section n desc) = do
     -- TODO: Add <section> tags for each H2
     H.h2 ! A.id (textValue $ compAnchor (S s))
          $ (toHtml n)
-    H.p  (toHtml desc)
+    unless (T.null desc) $ do
+        H.p $ toHtml desc
 
 ------------------------------------------------------------------------
 
