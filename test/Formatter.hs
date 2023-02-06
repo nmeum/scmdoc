@@ -42,4 +42,13 @@ procedureFmt = testGroup "Formatter for procedure definitions"
 
         assertEqual "" (Just $ Procedure "id" ["x"] [(Id "x")])
             $ makeFmt mkProcedure "(define (id x) x)"
+
+    , testCase "Procedure definition with period" $ do
+        assertEqual "Multiple parameters"
+                    (Just $ Procedure "foo" ["bar", ".", "baz"] [(Id "baz")])
+            $ makeFmt mkProcedure "(define (foo bar . baz) baz)"
+
+        assertEqual "Single parameter"
+                    (Just $ Procedure "parse-seq" [".", "o"] [(List [(Id "parse-seq-list"), (Id "o")])])
+            $ makeFmt mkProcedure "(define (parse-seq . o) (parse-seq-list o))"
     ]
