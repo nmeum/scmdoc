@@ -32,6 +32,13 @@ Unit tests are available and can be invoked using the following command:
 
     $ cabal test
 
+Furthermore, integration tests are available.
+These tests require the `scmdoc` binary to be available in your `$PATH`.
+Furthermore, they require [Tidy][tidy web] to be installed.
+If these prerequisites are satisfied run the following command to execute these tests:
+
+    $ ./golden/run.sh
+
 ## Approach
 
 The `scmdoc` tool is structured around R7RS Scheme libraries.
@@ -144,3 +151,4 @@ Furthermore, this code presently includes the Scheme number parser from [Husk Sc
 [greenfield classless]: https://ubershmekel.medium.com/the-next-css-frontier-classless-5e66f3f25fdd
 [water.css web]: https://watercss.kognise.dev/
 [chibi parse]: https://synthcode.com/scheme/chibi/lib/chibi/parse.html
+[tidy web]: https://www.html-tidy.org
