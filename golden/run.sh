@@ -15,7 +15,13 @@ prettify() {
 		"$@" 2>/dev/null
 }
 
-TESTDIR="/tmp/edward-test"
+if ! command -v scmdoc 1>/dev/null; then
+	abort "Error: Couldn't find 'scmdoc' in \$PATH" 1>&2
+elif ! command -v tidy 1>/dev/null; then
+	abort "Error: Couldn't find 'tidy' in \$PATH" 1>&2
+fi
+
+TESTDIR="/tmp/scmdoc-test"
 mkdir -p "${TESTDIR}"
 trap "rm -rf '${TESTDIR}'" INT EXIT
 
