@@ -21,10 +21,6 @@ elif ! command -v tidy 1>/dev/null; then
 	abort "Error: Couldn't find 'tidy' in \$PATH" 1>&2
 fi
 
-TESTDIR="/tmp/scmdoc-test"
-mkdir -p "${TESTDIR}"
-trap "rm -rf '${TESTDIR}'" INT EXIT
-
 for test in *; do
 	[ -d "${test}" ] || continue
 
