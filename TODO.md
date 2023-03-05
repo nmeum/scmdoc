@@ -1,3 +1,5 @@
+* For renamed identifiers: Use the renamed identifier in the documentation
+* Support `include-ci` in `Library.hs`
 * Add flag to include un-exported identifiers in documentation
 * Consider using `lucid2` instead of `blaze-html`
     * Ideally in combination with `mmark`
