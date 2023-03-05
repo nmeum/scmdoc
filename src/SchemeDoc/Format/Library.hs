@@ -87,15 +87,16 @@ libExports lib ident = any (\Export{internal=i} -> i == ident) $
 --      | (include <string>+)
 --      | (include-ci <string>+)
 --
+-- TODO: Support include-ci
 expand :: Sexp -> IO Sexp
-expand (List ((Id "include-ci"):fileNames)) = expand' fileNames True
-expand (List ((Id "include"):fileNames)) = expand' fileNames False
+expand (List ((Id "include"):fileNames)) = expand' fileNames
+expand e@(List ((Id "include-ci"):_)) = throwSyntax e "include-ci currently not supported"
 expand e = throwSyntax e "not an include expression"
 
-expand' :: [Sexp] -> Bool -> IO Sexp
-expand' fileNames lower = do
+expand' :: [Sexp] -> IO Sexp
+expand' fileNames = do
     paths <- mapM (\case
-                    Str s -> pure $ if lower then T.toLower s else s
+                    Str s -> pure s
                     e     -> throwSyntax e "expected list of strings")
              fileNames
 
