@@ -11,7 +11,16 @@
 -- >   (begin
 -- >     (define (my-proc x)
 -- >       (* x 2))))
-module SchemeDoc.Format.Library (Library (..), mkLibrary, libName, libExports, libExpand, ExportSpec (..), LibraryName)
+module SchemeDoc.Format.Library (
+    Library (..),
+    mkLibrary,
+    libName,
+    libExternal,
+    libExports,
+    libExpand,
+    ExportSpec (..),
+    LibraryName,
+)
 where
 
 import Control.Monad (foldM)
@@ -77,6 +86,14 @@ mkLibrary e = makeErr e "found no library definition"
 -- name, are joined by a single @' '@ character.
 libName :: Library -> T.Text
 libName (Library{libIdent = n}) = libName' n
+
+-- | Return the external identifier for the given internal identifier.
+libExternal :: Library -> T.Text -> T.Text
+libExternal lib name =
+    foldl
+        (\acc e -> if internal e == name then external e else acc)
+        ""
+        (libExport lib)
 
 -- | Whether the 'Library' exports the given **internal** identifier.
 libExports :: Library -> T.Text -> Bool

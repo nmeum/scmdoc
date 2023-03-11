@@ -26,6 +26,15 @@ libraryParser =
             assertEqual "Library name" "foo" $ libName library
             assertEqual "Exports string-length" True $ libExports library "string-length"
             assertEqual "Doesn't export foo" False $ libExports library "foo"
+        , testCase "Library with renamed identifier" $ do
+            let input = ";;> my comment\n(define-library (foo) (export (rename string-length strlen)))"
+            let (Right expr) = parse input
+
+            let (Right libraries) = findDocLibs expr
+            assertEqual "Amount of libraries" 1 $ length libraries
+
+            let library = snd $ head libraries
+            assertEqual "Renamed identifier" "strlen" $ libExternal library "string-length"
         , testCase "Multiple library definitions in a single file" $ do
             let input = ";;> foo library\n(define-library (foo))\n;;> bar library\n(define-library (bar))"
             let (Right expr) = parse input
