@@ -130,6 +130,14 @@ A loose, incomplete collection of similar work on the documentation of Scheme co
 * [`l2t`][l2t web] (aka. LiSP2TeX): A literate programming utility for inserting Scheme into TeX files
 * [schemeweb][schemeweb ctan]: Simple literate programming for Scheme with LaTeX
 
+## Development
+
+Please format all code with [fourmolu](https://github.com/fourmolu/fourmolu).
+For convince, a pre-commit Git hook for checking if files are properly formated is provided in `.githooks`.
+It can be activated using:
+
+    $ git config --local core.hooksPath .githooks
+
 ## License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.
