@@ -74,7 +74,7 @@ format lib comps = do
     forM_
         finalComps
         ( \case
-            D c -> declFmt c
+            D c -> declFmt c Nothing
             S s -> sectionFmt s
         )
   where

@@ -27,11 +27,12 @@ data Procedure = Procedure
     deriving (Eq, Show)
 
 instance Formatable Procedure where
-    fmt (Procedure{name = n, params = p}) desc =
-        Declaration n desc $ do
-            component "procedure" n
-            fromMkd desc
-            htmlSexp $ List ([Id n] ++ map Id p)
+    fmt (Procedure{name = internalId, params = p}) desc =
+        mkDeclaration internalId desc $ \n ->
+            do
+                component "procedure" n
+                fromMkd desc
+                htmlSexp $ List ([Id n] ++ map Id p)
 
 -- | Parses a Scheme procedure definition.
 --

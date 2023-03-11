@@ -38,9 +38,10 @@ data Library = Library
     deriving (Show)
 
 instance Formatable Library where
-    fmt lib desc = Declaration (libName lib) desc $ do
-        H.h1 $ toHtml (libName lib)
-        fromMkd desc
+    fmt lib desc = mkDeclaration (libName lib) desc $ \n ->
+        do
+            H.h1 $ toHtml n
+            fromMkd desc
 
 -- | Parse a Scheme library definition.
 --

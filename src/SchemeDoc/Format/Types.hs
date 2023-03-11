@@ -2,7 +2,9 @@
 
 -- | This module provides data types for building 'Formatter's.
 module SchemeDoc.Format.Types (
-    Declaration (..),
+    Declaration (declId, declDesc),
+    mkDeclaration,
+    declFmt,
     Formatable (..),
     Formatter,
     Section (..),
@@ -36,9 +38,16 @@ data Declaration = Declaration
     -- ^ Internal identifier of the declaration.
     , declDesc :: T.Text
     -- ^ Documentation for the declaration, i.e. the 'DocComment' preceding it.
-    , declFmt :: Html
-    -- ^ HTML documenation for the declaration.
+    , declFmt' :: (T.Text -> Html)
     }
+
+-- | Create a new 'Declaration' with a given identifier, description and format function.
+mkDeclaration :: T.Text -> T.Text -> (T.Text -> Html) -> Declaration
+mkDeclaration = Declaration
+
+-- | Format a declaration with an optional external identifier.
+declFmt :: Declaration -> Maybe T.Text -> Html
+declFmt d newName = declFmt' d $ maybe (declId d) id newName
 
 -- | Function for converting an S-expression into a 'Declaration'
 -- based on the given documentation for the S-expression.

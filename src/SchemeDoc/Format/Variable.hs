@@ -22,11 +22,12 @@ data Variable = Variable
     deriving (Eq, Show)
 
 instance Formatable Variable where
-    fmt (Variable n _) desc =
-        Declaration n desc $ do
-            component "constant " n
-            fromMkd desc
-            htmlSexp (Id n)
+    fmt (Variable internalId _) desc =
+        mkDeclaration internalId desc $ \n ->
+            do
+                component "constant " n
+                fromMkd desc
+                htmlSexp (Id n)
 
 -- | Parses a Scheme definition.
 --

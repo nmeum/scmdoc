@@ -54,7 +54,7 @@ docDecls (_, lib) = do
 docFmt :: DocLib -> [Component] -> Html
 docFmt (libDesc, lib) comps =
     let html = format lib comps
-     in declFmt (fmt lib libDesc) >> html
+     in declFmt (fmt lib libDesc) Nothing >> html
 
 -- | Render an 'Html' document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String
@@ -82,7 +82,7 @@ findUndocumented lib comps =
     member ident =
         any
             ( \case
-                D Declaration{declId = i} -> i == ident
+                D d -> declId d == ident
                 S _ -> False
             )
 
