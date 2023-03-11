@@ -33,7 +33,7 @@ findDocLibs exprs = foldr fn (Right []) (findDocumented exprs)
   where
     fn (s, e@(List ((Id "define-library") : _))) acc =
         case mkLibrary e of
-            Right lib -> fmap ((:) (s, lib)) acc
+            Right lib -> fmap ((s, lib) :) acc
             Left err -> Left err
     fn _ acc = acc
 
@@ -54,7 +54,7 @@ docDecls (_, lib) = do
 docFmt :: DocLib -> [Component] -> Html
 docFmt (libDesc, lib) comps =
     let html = format lib comps
-     in (declFmt $ fmt lib libDesc) >> html
+     in declFmt (fmt lib libDesc) >> html
 
 -- | Render an 'Html' document with the given title, stylesheet, and body.
 mkDoc :: String -> String -> Html -> String
@@ -101,7 +101,7 @@ filterDocs = snd . walk filterDocs' (False, [])
 findDocumented :: [Sexp] -> [Documented]
 findDocumented = toPairLst . filterDocs
   where
-    toPairLst :: [Sexp] -> [(Documented)]
+    toPairLst :: [Sexp] -> [Documented]
     toPairLst [] = []
     toPairLst ((DocComment s) : expr : xs) = (s, expr) : toPairLst xs
     toPairLst _ = error "unreachable"
