@@ -1,16 +1,17 @@
 import Test.Tasty
 
-import Parser
-import Library
 import Formatter
+import Library
+import Parser
 
 main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Tests"
-  [
-    schemeParser
-    , libraryParser
-    , formatter
-  ]
+tests =
+    testGroup
+        "Tests"
+        [ schemeParser
+        , libraryParser
+        , formatter
+        ]

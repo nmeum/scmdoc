@@ -1,25 +1,28 @@
 {-# LANGUAGE LambdaCase #-}
+
 module Main where
 
-import System.IO
-import System.FilePath
-import System.Directory
 import Control.Exception
 import Control.Monad
 import Options.Applicative
+import System.Directory
+import System.FilePath
+import System.IO
 
 import SchemeDoc
 import SchemeDoc.Error
-import SchemeDoc.Types
-import SchemeDoc.Parser.R7RS
 import SchemeDoc.Format.Library
+import SchemeDoc.Parser.R7RS
+import SchemeDoc.Types
 
 data Opts = Opts
-    { css     :: String
-    , title   :: String
-    , output  :: FilePath
-    , library :: FilePath }
+    { css :: String
+    , title :: String
+    , output :: FilePath
+    , library :: FilePath
+    }
 
+{- FOURMOLU_DISABLE -}
 parseOpts :: Parser Opts
 parseOpts = Opts
     <$> option str
@@ -35,21 +38,25 @@ parseOpts = Opts
        <> short 'o'
        <> value "-" )
     <*> argument str (metavar "FILE")
+{- FOURMOLU_ENABLE -}
 
 ------------------------------------------------------------------------
 
 writeDoc :: Opts -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib@Library{libIdent=n}) = do
+writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib@Library{libIdent = n}) = do
     (comps, failed) <- docDecls docLib
 
-    forM_ failed
+    forM_
+        failed
         (\f -> warn $ "Failed to find formatter for:\n\n\t" ++ (show f) ++ "\n")
-    forM_ (findUndocumented lib comps)
+    forM_
+        (findUndocumented lib comps)
         (\i -> warn $ "Exported but undocumented: " ++ (show i))
 
-    let hTitle = if null optTitle
-                    then show $ n
-                    else optTitle
+    let hTitle =
+            if null optTitle
+                then show $ n
+                else optTitle
 
     let hbody = docFmt docLib comps
     let html = mkDoc hTitle optCss hbody
@@ -66,29 +73,32 @@ findDocLibs' exprs =
         Left err -> throwIO $ ErrSyntax err
 
 main' :: Opts -> IO ()
-main' opts@(Opts{library=optFile}) =
-  catch
-   ( do
-     source <- parseFromFile optFile
+main' opts@(Opts{library = optFile}) =
+    catch
+        ( do
+            source <- parseFromFile optFile
 
-     -- Expand all includes relative to given Scheme file.
-     setCurrentDirectory $ takeDirectory optFile
+            -- Expand all includes relative to given Scheme file.
+            setCurrentDirectory $ takeDirectory optFile
 
-     libs <- findDocLibs' source
-     if null libs
-         then hPutStrLn stderr "Warning: Found no documented define-library expression"
-         else mapM (writeDoc opts) libs >> pure ()
-   )
-   ( \case
-     ErrSyntax (SyntaxError expr err) ->
-        hPutStrLn stderr $ "Syntax error on expression `" ++ (show expr) ++ "`: " ++ err
-     ErrParser err ->
-        hPutStrLn stderr $ show err
-   )
+            libs <- findDocLibs' source
+            if null libs
+                then hPutStrLn stderr "Warning: Found no documented define-library expression"
+                else mapM (writeDoc opts) libs >> pure ()
+        )
+        ( \case
+            ErrSyntax (SyntaxError expr err) ->
+                hPutStrLn stderr $ "Syntax error on expression `" ++ (show expr) ++ "`: " ++ err
+            ErrParser err ->
+                hPutStrLn stderr $ show err
+        )
 
 main :: IO ()
 main = main' =<< execParser opts
   where
-    opts = info (parseOpts <**> helper)
-        ( fullDesc
-       <> progDesc "Generate HTML documentation for a R⁷RS Scheme library" )
+    opts =
+        info
+            (parseOpts <**> helper)
+            ( fullDesc
+                <> progDesc "Generate HTML documentation for a R⁷RS Scheme library"
+            )

@@ -1,7 +1,7 @@
 module Util where
 
-import SchemeDoc.Types
 import SchemeDoc.Parser.R7RS
+import SchemeDoc.Types
 import qualified Text.ParserCombinators.Parsec as P
 
 parseErrors :: P.Parser a -> String -> String
@@ -9,7 +9,7 @@ parseErrors p input =
     case P.parse p "" input of
         Left err ->
             last $ lines $ show err
-        Right _  -> ""
+        Right _ -> ""
 
 parse :: String -> Either P.ParseError [Sexp]
 parse = P.parse scheme ""

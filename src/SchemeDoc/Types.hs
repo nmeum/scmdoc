@@ -1,26 +1,27 @@
 -- | Data types for the SchemeDoc library.
 module SchemeDoc.Types where
 
+import Data.Complex
 import Data.List (intercalate)
 import qualified Data.Text as T
-import Data.Complex
 
 -- | A documented S-expression, i.e. an S-expression which is preceeded
 -- by a 'DocComment`.
 type Documented = (T.Text, Sexp)
 
 -- | Algebraic data type representing Scheme S-expressions.
-data Sexp = Str        T.Text  -- "foo"
-          | Id         T.Text  -- foo
-          | Symbol     T.Text  -- 'foo
-          | Char       Char    -- #\f
-          | Boolean    Bool    -- #t
-          | List       [Sexp]  -- ["foo" "bar"]
-          | Number     Integer
-          | Float      Double
-          | Complex    (Complex Double)
-          | Rational   Rational
-          | DocComment T.Text
+data Sexp
+    = Str T.Text -- "foo"
+    | Id T.Text -- foo
+    | Symbol T.Text -- 'foo
+    | Char Char -- #\f
+    | Boolean Bool -- #t
+    | List [Sexp] -- ["foo" "bar"]
+    | Number Integer
+    | Float Double
+    | Complex (Complex Double)
+    | Rational Rational
+    | DocComment T.Text
     deriving (Eq)
 
 instance Show Sexp where
@@ -42,6 +43,11 @@ instance Show Sexp where
 -- be passed the `List` expression itself and then each
 -- element of the list from left to right.
 walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b
-walk proc acc src = foldl (\a x -> case x of
-    List exprs -> walk proc (proc a x) exprs
-    expr       -> proc a expr) acc src
+walk proc acc src =
+    foldl
+        ( \a x -> case x of
+            List exprs -> walk proc (proc a x) exprs
+            expr -> proc a expr
+        )
+        acc
+        src
