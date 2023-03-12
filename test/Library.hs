@@ -40,7 +40,8 @@ libraryParser =
 
             assertEqual "Exports renamed internal" True $ libExports lib "string-length"
             assertEqual "Doesn't export renamed external" False $ libExports lib "strlen"
-            assertEqual "Renamed identifier" "strlen" $ libExternal lib "string-length"
+            assertEqual "Renamed identifier" (Just "strlen") $ libExternal lib "string-length"
+            assertEqual "Unknown identifier" Nothing $ libExternal lib "foo"
         , testCase "Multiple lib definitions in a single file" $ do
             let libs = getLibs ";;> foo lib\n(define-library (foo))\n;;> bar library\n(define-library (bar))"
             assertEqual "Amount of libraries" 2 $ length libs

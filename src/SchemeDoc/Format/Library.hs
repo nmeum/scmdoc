@@ -24,6 +24,7 @@ module SchemeDoc.Format.Library (
 where
 
 import Control.Monad (foldM)
+import Data.List (find)
 
 import SchemeDoc.Error
 import SchemeDoc.Format.Types
@@ -88,12 +89,10 @@ libName :: Library -> T.Text
 libName (Library{libIdent = n}) = libName' n
 
 -- | Return the external identifier for the given internal identifier.
-libExternal :: Library -> T.Text -> T.Text
+libExternal :: Library -> T.Text -> Maybe T.Text
 libExternal lib name =
-    foldl
-        (\acc e -> if internal e == name then external e else acc)
-        ""
-        (libExport lib)
+    external
+        <$> find (\e -> internal e == name) (libExport lib)
 
 -- | Whether the 'Library' exports the given **internal** identifier.
 libExports :: Library -> T.Text -> Bool
