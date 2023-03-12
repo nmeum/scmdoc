@@ -69,40 +69,44 @@ writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
 
     let hbody = docFmt docLib comps
     let html = mkDoc hTitle optCss hbody
-
     writeFile outFp $ html ++ "\n"
   where
     warn msg = hPutStrLn stderr $ "WARNING: " ++ msg
 
-findDocLibs' :: [Sexp] -> IO [DocLib]
-findDocLibs' exprs =
-    case findDocLibs exprs of
-        Right libs -> pure libs
-        Left err -> throwIO $ ErrSyntax err
+writeAll :: Opts -> [(FilePath, DocLib)] -> IO ()
+writeAll opts@(Opts{directory = optDir}) =
+    mapM_
+        (\(p, l) -> writeDoc opts p (mkPath l) l)
+  where
+    mkPath :: DocLib -> FilePath
+    mkPath l = joinPath [optDir, libFileName l]
+
+findAllLibs :: [[Sexp]] -> [FilePath] -> IO [(FilePath, DocLib)]
+findAllLibs srcs files =
+    foldM
+        ( \acc (path, src) -> do
+            l <- findDocLibs' src
+            pure $ map ((,) path) l ++ acc
+        )
+        []
+        (zip files srcs)
+  where
+    findDocLibs' :: [Sexp] -> IO [DocLib]
+    findDocLibs' exprs = either (throwIO . ErrSyntax) pure $ findDocLibs exprs
 
 main' :: Opts -> IO ()
 main' opts@(Opts{libraries = optFiles, directory = optDir}) =
     catch
         ( do
             srcs <- mapM parseFromFile optFiles
-            libs <-
-                foldM
-                    ( \acc (path, src) -> do
-                        l <- findDocLibs' src
-                        pure $ (map ((,) path) l) ++ acc
-                    )
-                    []
-                    (zip optFiles srcs)
+            libs <- findAllLibs srcs optFiles
 
             -- Create output directory and its parents (mkdir -p).
             createDirectoryIfMissing True optDir
 
             if null libs
                 then hPutStrLn stderr "Warning: Found no documented define-library expression"
-                else
-                    mapM_
-                        (\(p, l) -> writeDoc opts p (joinPath [optDir, libFileName l]) l)
-                        libs
+                else writeAll opts libs
         )
         ( \case
             ErrSyntax (SyntaxError expr err) ->
