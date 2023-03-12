@@ -21,20 +21,29 @@ elif ! command -v tidy 1>/dev/null; then
 	abort "Error: Couldn't find 'tidy' in \$PATH" 1>&2
 fi
 
+TESTDIR="/tmp/scmdoc-test"
+
+mkdir -p "${TESTDIR}"
+trap "rm -rf '${TESTDIR}'" INT EXIT
+
 for test in *; do
 	[ -d "${test}" ] || continue
 
 	name="${test##*/}"
 	printf "Running test case '%s': " "${name}"
 
-	diff=$(scmdoc "${test}/input.scm" -o - | \
-		prettify | \
-		diff -u "${test}/expected.html" -)
+	scmdoc "${test}/input.scm" -o "${TESTDIR}"
+	for file in "${TESTDIR}"/*.html; do
+		prettify -o "${file}" "${file}"
+	done
+
+	diff=$(diff -ur "${test}/expected" "${TESTDIR}")
 	if [ $? -ne 0 ]; then
 		printf "FAIL: Output differs.\n\n"
 		printf "%s\n" "${diff}"
 		exit 1
 	fi
 
+	rm "${TESTDIR}"/*.html
 	printf "OK.\n"
 done
