@@ -5,7 +5,7 @@ if ! command -v fourmolu 1>/dev/null; then
 	exit 1
 fi
 
-out=$(git diff --cached --name-only src/ test/ | xargs -r fourmolu -q --mode check 2>&1)
+out=$(git diff --cached --name-only app/ src/ test/ | xargs -r fourmolu -q --mode check 2>&1)
 if [ $? -ne 0 ]; then
 	printf "The following files need to be formated with 'fourmolu':\n\n" 1>&2
 	printf "%s\n" "${out}" | awk '/\.hs$/ { printf("\t%s\n", $0) }' 1>&2
