@@ -13,7 +13,7 @@ for test in *; do
 	[ -d "${test}" ] || continue
 
 	rm -rf "${test}/expected"
-	scmdoc "${test}/input.scm" -o "${test}"/expected
+	scmdoc "${test}"/*.scm -o "${test}"/expected
 
 	for file in "${test}/expected"/*.html; do
 		prettify -o "${file}" "${file}"

@@ -32,7 +32,7 @@ for test in *; do
 	name="${test##*/}"
 	printf "Running test case '%s': " "${name}"
 
-	scmdoc "${test}/input.scm" -o "${TESTDIR}"
+	scmdoc "${test}"/*.scm -o "${TESTDIR}"
 	for file in "${TESTDIR}"/*.html; do
 		prettify -o "${file}" "${file}"
 	done

@@ -20,7 +20,7 @@ data Opts = Opts
     { css :: String
     , title :: String
     , directory :: FilePath
-    , library :: FilePath
+    , libraries :: [FilePath]
     }
 
 {- FOURMOLU_DISABLE -}
@@ -38,7 +38,7 @@ parseOpts = Opts
         ( long "output"
        <> short 'o'
        <> value "." )
-    <*> argument str (metavar "FILE")
+    <*> some (argument str (metavar "FILE..."))
 {- FOURMOLU_ENABLE -}
 
 ------------------------------------------------------------------------
@@ -50,10 +50,10 @@ libFileName (_, l) =
             (T.map (\c -> if c == ' ' then '-' else c) $ L.name l)
             (T.pack ".html")
 
-writeDoc :: Opts -> FilePath -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle _ optFile) outFp docLib@(_, lib) = do
+writeDoc :: Opts -> FilePath -> FilePath -> DocLib -> IO ()
+writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
     -- Expand all includes relative to given Scheme file.
-    (comps, failed) <- withCurrentDirectory (takeDirectory optFile) (docDecls docLib)
+    (comps, failed) <- withCurrentDirectory (takeDirectory inFp) (docDecls docLib)
 
     forM_
         failed
@@ -81,11 +81,18 @@ findDocLibs' exprs =
         Left err -> throwIO $ ErrSyntax err
 
 main' :: Opts -> IO ()
-main' opts@(Opts{library = optFile, directory = optDir}) =
+main' opts@(Opts{libraries = optFiles, directory = optDir}) =
     catch
         ( do
-            srcs <- parseFromFile optFile
-            libs <- findDocLibs' srcs
+            srcs <- mapM parseFromFile optFiles
+            libs <-
+                foldM
+                    ( \acc (path, src) -> do
+                        l <- findDocLibs' src
+                        pure $ (map ((,) path) l) ++ acc
+                    )
+                    []
+                    (zip optFiles srcs)
 
             -- Create output directory and its parents (mkdir -p).
             createDirectoryIfMissing True optDir
@@ -94,7 +101,7 @@ main' opts@(Opts{library = optFile, directory = optDir}) =
                 then hPutStrLn stderr "Warning: Found no documented define-library expression"
                 else
                     mapM_
-                        (\l -> writeDoc opts (joinPath [optDir, libFileName l]) l)
+                        (\(p, l) -> writeDoc opts p (joinPath [optDir, libFileName l]) l)
                         libs
         )
         ( \case
