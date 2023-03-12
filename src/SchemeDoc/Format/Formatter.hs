@@ -74,7 +74,7 @@ format lib comps = do
     forM_
         finalComps
         ( \case
-            D c -> declFmt c Nothing
+            D c -> declFmt c $ Just (libExternal lib $ declId c)
             S s -> sectionFmt s
         )
   where
