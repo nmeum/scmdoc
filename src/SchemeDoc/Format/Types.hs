@@ -19,6 +19,7 @@ where
 
 import Control.Monad (unless)
 import Data.Char (isSpace)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import SchemeDoc.Types
 
@@ -38,7 +39,7 @@ data Declaration = Declaration
     -- ^ Internal identifier of the declaration.
     , declDesc :: T.Text
     -- ^ Documentation for the declaration, i.e. the 'DocComment' preceding it.
-    , declFmt' :: (T.Text -> Html)
+    , declFmt' :: T.Text -> Html
     }
 
 -- | Create a new 'Declaration' with a given identifier, description and format function.
@@ -47,7 +48,7 @@ mkDeclaration = Declaration
 
 -- | Format a declaration with an optional external identifier.
 declFmt :: Declaration -> Maybe T.Text -> Html
-declFmt d newName = declFmt' d $ maybe (declId d) id newName
+declFmt d newName = declFmt' d $ fromMaybe (declId d) newName
 
 -- | Function for converting an S-expression into a 'Declaration'
 -- based on the given documentation for the S-expression.
@@ -97,7 +98,7 @@ sectionFmt :: Section -> Html
 sectionFmt s@(Section n desc) = do
     -- TODO: Add <section> tags for each H2
     H.h2 ! A.id (textValue $ compAnchor (S s)) $
-        (toHtml n)
+        toHtml n
     unless (T.null desc) $ do
         H.p $ toHtml desc
 
@@ -119,7 +120,7 @@ compAnchor (S (Section n _)) = "section-" `T.append` toAnchor n
 compLink :: Component -> Html
 compLink c = do
     H.a ! A.href (textValue $ T.cons '#' (compAnchor c)) $
-        (toHtml $ compName c)
+        toHtml (compName c)
   where
     compName :: Component -> T.Text
     compName (D c') = declId c'

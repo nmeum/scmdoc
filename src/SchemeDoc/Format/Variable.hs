@@ -33,6 +33,6 @@ instance Formatable Variable where
 --
 -- > <definition> → (define <identifier> <expression>)
 mkVariable :: Sexp -> Maybe Variable
-mkVariable (List ((Id "define") : (Id name) : expr : [])) =
+mkVariable (List [Id "define", Id name, expr]) =
     Just $ Variable name expr
 mkVariable _ = Nothing

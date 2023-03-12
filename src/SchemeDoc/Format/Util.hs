@@ -19,7 +19,7 @@ htmlSexp = H.pre . H.code . toHtml . show
 component :: T.Text -> T.Text -> Html
 component prefix name = do
     H.h3 $ do
-        toHtml $ (toMarkup $ T.append prefix " ")
+        toHtml $ toMarkup (T.append prefix " ")
         H.a
             ! A.id (textValue name)
             ! A.href (textValue (T.cons '#' name))

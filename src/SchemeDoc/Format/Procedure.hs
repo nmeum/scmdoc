@@ -32,7 +32,7 @@ instance Formatable Procedure where
             do
                 component "procedure" n
                 fromMkd desc
-                htmlSexp $ List ([Id n] ++ map Id p)
+                htmlSexp $ List (Id n : map Id p)
 
 -- | Parses a Scheme procedure definition.
 --
@@ -43,7 +43,7 @@ instance Formatable Procedure where
 -- > <def formals> → <identifier>* | <identifier>* . <identifier>
 mkProcedure :: Sexp -> Maybe Procedure
 mkProcedure (List ((Id "define") : (List ((Id defid) : arglst)) : bodylst)) =
-    ((flip $ Procedure defid) bodylst)
+    (flip $ Procedure defid) bodylst
         <$> mapM
             ( \case
                 Id arg -> Just arg

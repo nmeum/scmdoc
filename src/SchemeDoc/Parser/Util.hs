@@ -1,5 +1,6 @@
 module SchemeDoc.Parser.Util where
 
+import Control.Monad (void)
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
 
@@ -14,11 +15,11 @@ hex = fmap readHex' hexDigits
 
 -- Bind a given character to the given result.
 bind :: String -> a -> Parser a
-bind str val = const val <$> string str
+bind str val = val <$ string str
 
 -- Like skipMany but without the many part.
 skip :: Parser a -> Parser ()
-skip = fmap (const ())
+skip = void
 
 -- Runs both parsers and returns the result of the first.
 terminatedBy :: Parser a -> Parser b -> Parser a

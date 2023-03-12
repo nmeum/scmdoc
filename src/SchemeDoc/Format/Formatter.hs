@@ -25,9 +25,9 @@ import qualified Text.Blaze.Html5 as H
 data ToC = Heading Section | Items [Declaration]
 
 tableOfContents' :: [Component] -> [ToC] -> [ToC]
-tableOfContents' ((D pc) : xs) ((Items lst) : toc) = tableOfContents' xs (toc ++ [(Items $ lst ++ [pc])])
-tableOfContents' ((D pc) : xs) toc = tableOfContents' xs (toc ++ [(Items [pc])])
-tableOfContents' ((S sec) : xs) toc = tableOfContents' xs (toc ++ [(Heading sec)])
+tableOfContents' ((D pc) : xs) ((Items lst) : toc) = tableOfContents' xs (toc ++ [Items $ lst ++ [pc]])
+tableOfContents' ((D pc) : xs) toc = tableOfContents' xs (toc ++ [Items [pc]])
+tableOfContents' ((S sec) : xs) toc = tableOfContents' xs (toc ++ [Heading sec])
 tableOfContents' [] toc = toc
 
 tableOfContents :: [Component] -> Html
@@ -40,20 +40,20 @@ tableOfContents comps = H.ul $ do
         )
   where
     formatItems :: [Declaration] -> Html
-    formatItems decls = forM_ decls (\pc -> H.li $ compLink (D pc))
+    formatItems decls = forM_ decls (H.li . compLink . D)
 
 ------------------------------------------------------------------------
 
 -- | The default 'Formatter', can be extented via the 'Maybe' applicative.
 defFormatter :: Sexp -> T.Text -> Maybe Declaration
 defFormatter sexp desc =
-    ((flip fmt) desc) <$> mkVariable sexp
-        <|> ((flip fmt) desc) <$> mkProcedure sexp
+    flip fmt desc <$> mkVariable sexp
+        <|> flip fmt desc <$> mkProcedure sexp
 
 -- | Find all 'Component's recognized by the given 'Formatter'.
 -- Non-recognized S-expressions are also returned.
 findComponents :: Formatter -> [Documented] -> ([Component], [Sexp])
-findComponents formatFn docs = foldl foldFunc ([], []) docs
+findComponents formatFn = foldl foldFunc ([], [])
   where
     foldFunc (acc, unFmt) (secRaw, com@(DocComment desc)) =
         case sectionComment secRaw of

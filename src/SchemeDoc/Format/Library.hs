@@ -122,8 +122,8 @@ expand' fileNames = do
             )
             fileNames
 
-    exprs <- (mapM (parseFromFile . T.unpack) paths)
-    pure $ List ([Id "begin"] ++ concat exprs)
+    exprs <- mapM (parseFromFile . T.unpack) paths
+    pure $ List (Id "begin" : concat exprs)
 
 -- | Expand the library declaration. Returns all begin blocks, including
 -- includer expressions as expanded begin blocks.
@@ -155,8 +155,8 @@ mkLibName :: Sexp -> Either SyntaxError LibraryName
 mkLibName (List exprs) =
     LibName
         <$> mapM
-            ( \x -> case x of
-                Id ident -> Right $ ident
+            ( \case
+                Id ident -> Right ident
                 -- TODO: Only allow <uinteger 10> in library name
                 Number n -> Right $ T.pack (show n :: String)
                 e -> makeErr e "expected identifier or uinteger"
@@ -189,7 +189,7 @@ mkExport :: Sexp -> Either SyntaxError [ExportSpec]
 mkExport (List ((Id "export") : items)) =
     foldr
         ( \x acc -> case exportDecl x of
-            Right e -> fmap ((:) e) acc
+            Right e -> fmap (e :) acc
             Left e -> Left e
         )
         (Right [])
