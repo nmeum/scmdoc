@@ -6,14 +6,14 @@
 -- is supported as an output format.
 --
 -- The API, provided by this module, is structured around R7RS
--- Scheme 'Library' declarations and generates documentation
+-- Scheme 'L.Library' declarations and generates documentation
 -- for all exported identifiers of a Scheme library.
 module SchemeDoc (DocLib, findDocLibs, docDecls, docFmt, mkDoc, findUndocumented)
 where
 
 import SchemeDoc.Error
 import SchemeDoc.Format.Formatter
-import SchemeDoc.Format.Library
+import qualified SchemeDoc.Format.Library as L
 import SchemeDoc.Format.Types
 import SchemeDoc.Types
 
@@ -23,21 +23,21 @@ import Text.Blaze.Html.Renderer.String
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
--- | A documented Scheme library, i.e. a Scheme 'Library' declaration
+-- | A documented Scheme library, i.e. a Scheme 'L.Library' declaration
 -- which is proceded by a 'DocComment'.
-type DocLib = (T.Text, Library)
+type DocLib = (T.Text, L.Library)
 
--- | Find all documented Scheme 'Library' declarations in a Scheme source.
+-- | Find all documented Scheme 'L.Library' declarations in a Scheme source.
 findDocLibs :: [Sexp] -> Either SyntaxError [DocLib]
 findDocLibs exprs = foldr fn (Right []) (findDocumented exprs)
   where
     fn (s, e@(List ((Id "define-library") : _))) acc =
-        case mkLibrary e of
+        case L.mkLibrary e of
             Right lib -> fmap ((s, lib) :) acc
             Left err -> Left err
     fn _ acc = acc
 
--- | Find all documented 'Component's of a Scheme 'Library'. Performs
+-- | Find all documented 'Component's of a Scheme 'L.Library'. Performs
 -- file system access to expand includes and may return an 'ErrParser'
 -- exception.
 --
@@ -46,10 +46,10 @@ findDocLibs exprs = foldr fn (Right []) (findDocumented exprs)
 -- was found.
 docDecls :: DocLib -> IO ([Component], [Sexp])
 docDecls (_, lib) = do
-    sexprs <- libExpand lib
+    sexprs <- L.expand lib
     pure $ findComponents defFormatter (findDocumented sexprs)
 
--- | Format a documented 'Library', with regards to its 'Component's
+-- | Format a documented 'L.Library', with regards to its 'Component's
 -- (obtained via 'docDecls') as an 'Html' document.
 docFmt :: DocLib -> [Component] -> Html
 docFmt (libDesc, lib) comps =
@@ -72,11 +72,11 @@ mkDoc title css hbody = renderHtml $ H.docTypeHtml $ do
     H.body hbody
 
 -- | The name of all internal identifiers which are exported by the
--- 'Library' but not documented, i.e. not preceded by a 'DocComment'.
-findUndocumented :: Library -> [Component] -> [T.Text]
+-- 'L.Library' but not documented, i.e. not preceded by a 'DocComment'.
+findUndocumented :: L.Library -> [Component] -> [T.Text]
 findUndocumented lib comps =
     filter (\i -> not $ member i comps) $
-        map internal (libExport lib)
+        map L.internal (L.exported lib)
   where
     member :: T.Text -> [Component] -> Bool
     member ident =

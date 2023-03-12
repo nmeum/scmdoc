@@ -43,7 +43,7 @@ parseOpts = Opts
 ------------------------------------------------------------------------
 
 writeDoc :: Opts -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib@Library{libIdent = n}) = do
+writeDoc (Opts optCss optTitle optOut _) docLib@(_, lib@Library{ident = n}) = do
     (comps, failed) <- docDecls docLib
 
     forM_

@@ -11,7 +11,7 @@ where
 import Control.Applicative
 import Control.Monad
 
-import SchemeDoc.Format.Library
+import qualified SchemeDoc.Format.Library as L
 import SchemeDoc.Format.Procedure
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Variable
@@ -64,8 +64,8 @@ findComponents formatFn = foldl foldFunc ([], [])
             Just c -> (acc ++ [D c], unFmt)
             Nothing -> (acc, unFmt ++ [expr])
 
--- | Format all 'Component's which are exported by the given 'Library'.
-format :: Library -> [Component] -> Html
+-- | Format all 'Component's which are exported by the given 'L.Library'.
+format :: L.Library -> [Component] -> Html
 format lib comps = do
     H.h2 "Index"
     H.details $ do
@@ -74,7 +74,7 @@ format lib comps = do
     forM_
         finalComps
         ( \case
-            D c -> declFmt c (libExternal lib $ declId c)
+            D c -> declFmt c (L.externalId lib $ declId c)
             S s -> sectionFmt s
         )
   where
@@ -82,7 +82,7 @@ format lib comps = do
     exportedComps =
         filter
             ( \case
-                D c -> libExports lib $ declId c
+                D c -> L.exports lib $ declId c
                 S _ -> True
             )
             comps

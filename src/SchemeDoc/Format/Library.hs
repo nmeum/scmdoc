@@ -14,10 +14,10 @@
 module SchemeDoc.Format.Library (
     Library (..),
     mkLibrary,
-    libName,
-    libExternal,
-    libExports,
-    libExpand,
+    name,
+    externalId,
+    exports,
+    expand,
     ExportSpec (..),
     LibraryName,
 )
@@ -38,17 +38,17 @@ import qualified Text.Blaze.Html5 as H
 
 -- | An R7RS Scheme library as defined in Section 5.6 of the standard.
 data Library = Library
-    { libIdent :: LibraryName
+    { ident :: LibraryName
     -- ^ Library name.
-    , libExport :: [ExportSpec]
+    , exported :: [ExportSpec]
     -- ^ Export declaration of the library.
-    , libBody :: [Sexp]
-    -- ^ Body of the library.
+    , decl :: [Sexp]
+    -- ^ Declarations of the library.
     }
     deriving (Show)
 
 instance Formatable Library where
-    fmt lib desc = mkDeclaration (libName lib) desc $ \n ->
+    fmt lib desc = mkDeclaration (name lib) desc $ \n ->
         do
             H.h1 $ toHtml n
             fromMkd desc
@@ -85,20 +85,20 @@ mkLibrary e = makeErr e "found no library definition"
 
 -- | Name of the 'Library'. Multiple identifiers, within the library
 -- name, are joined by a single @' '@ character.
-libName :: Library -> T.Text
-libName (Library{libIdent = n}) = libName' n
+name :: Library -> T.Text
+name (Library{ident = n}) = name' n
 
 -- | Return the external identifier for the given internal identifier.
-libExternal :: Library -> T.Text -> Maybe T.Text
-libExternal lib name =
+externalId :: Library -> T.Text -> Maybe T.Text
+externalId lib n =
     external
-        <$> find (\e -> internal e == name) (libExport lib)
+        <$> find (\e -> internal e == n) (exported lib)
 
 -- | Whether the 'Library' exports the given **internal** identifier.
-libExports :: Library -> T.Text -> Bool
-libExports lib ident =
-    any (\Export{internal = i} -> i == ident) $
-        libExport lib
+exports :: Library -> T.Text -> Bool
+exports lib i =
+    any (\Export{internal = i'} -> i == i') $
+        exported lib
 
 -- Expand an include into a begin expression.
 --
@@ -107,13 +107,13 @@ libExports lib ident =
 --      | (include-ci <string>+)
 --
 -- TODO: Support include-ci
-expand :: Sexp -> IO Sexp
-expand (List ((Id "include") : fileNames)) = expand' fileNames
-expand e@(List ((Id "include-ci") : _)) = throwSyntax e "include-ci currently not supported"
-expand e = throwSyntax e "not an include expression"
+expandIncl :: Sexp -> IO Sexp
+expandIncl (List ((Id "include") : fileNames)) = expandIncl' fileNames
+expandIncl e@(List ((Id "include-ci") : _)) = throwSyntax e "include-ci currently not supported"
+expandIncl e = throwSyntax e "not an include expression"
 
-expand' :: [Sexp] -> IO Sexp
-expand' fileNames = do
+expandIncl' :: [Sexp] -> IO Sexp
+expandIncl' fileNames = do
     paths <-
         mapM
             ( \case
@@ -127,14 +127,14 @@ expand' fileNames = do
 
 -- | Expand the library declaration. Returns all begin blocks, including
 -- includer expressions as expanded begin blocks.
-libExpand :: Library -> IO [Sexp]
-libExpand (Library{libBody = decl}) = foldM libExpand' [] decl
+expand :: Library -> IO [Sexp]
+expand (Library{decl = d}) = foldM expand' [] d
   where
-    libExpand' :: [Sexp] -> Sexp -> IO [Sexp]
-    libExpand' acc e@(List ((Id "begin") : _)) = pure $ e : acc
-    libExpand' acc e@(List ((Id "include") : _)) = expand e >>= (\x -> pure $ x : acc)
-    libExpand' acc e@(List ((Id "include-ci") : _)) = expand e >>= (\x -> pure $ x : acc)
-    libExpand' acc _ = pure acc
+    expand' :: [Sexp] -> Sexp -> IO [Sexp]
+    expand' acc e@(List ((Id "begin") : _)) = pure $ e : acc
+    expand' acc e@(List ((Id "include") : _)) = expandIncl e >>= (\x -> pure $ x : acc)
+    expand' acc e@(List ((Id "include-ci") : _)) = expandIncl e >>= (\x -> pure $ x : acc)
+    expand' acc _ = pure acc
 
 ------------------------------------------------------------------------
 
@@ -142,10 +142,10 @@ libExpand (Library{libBody = decl}) = foldM libExpand' [] decl
 newtype LibraryName = LibName [T.Text]
 
 instance Show LibraryName where
-    show = T.unpack . libName'
+    show = T.unpack . name'
 
-libName' :: LibraryName -> T.Text
-libName' (LibName lst) = T.intercalate " " lst
+name' :: LibraryName -> T.Text
+name' (LibName lst) = T.intercalate " " lst
 
 -- Parses a Scheme library name.
 --
@@ -156,7 +156,7 @@ mkLibName (List exprs) =
     LibName
         <$> mapM
             ( \case
-                Id ident -> Right ident
+                Id i -> Right i
                 -- TODO: Only allow <uinteger 10> in library name
                 Number n -> Right $ T.pack (show n :: String)
                 e -> makeErr e "expected identifier or uinteger"
