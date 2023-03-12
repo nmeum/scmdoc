@@ -47,7 +47,7 @@ libFileName :: DocLib -> FilePath
 libFileName (_, l) =
     T.unpack $
         T.append
-            (T.map (\c -> if c == ' ' then '-' else c) $ L.name l)
+            (T.map (\c -> if c == ' ' then '/' else c) $ L.name l)
             (T.pack ".html")
 
 writeDoc :: Opts -> FilePath -> FilePath -> DocLib -> IO ()
@@ -76,10 +76,12 @@ writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
 writeAll :: Opts -> [(FilePath, DocLib)] -> IO ()
 writeAll opts@(Opts{directory = optDir}) =
     mapM_
-        (\(p, l) -> writeDoc opts p (mkPath l) l)
+        (\(p, l) -> mkDestPath l >>= flip (writeDoc opts p) l)
   where
-    mkPath :: DocLib -> FilePath
-    mkPath l = joinPath [optDir, libFileName l]
+    mkDestPath :: DocLib -> IO FilePath
+    mkDestPath l =
+        let fp = joinPath [optDir, libFileName l]
+         in fp <$ createDirectoryIfMissing True (takeDirectory fp)
 
 findAllLibs :: [[Sexp]] -> [FilePath] -> IO [(FilePath, DocLib)]
 findAllLibs srcs files =
@@ -95,14 +97,11 @@ findAllLibs srcs files =
     findDocLibs' exprs = either (throwIO . ErrSyntax) pure $ findDocLibs exprs
 
 main' :: Opts -> IO ()
-main' opts@(Opts{libraries = optFiles, directory = optDir}) =
+main' opts@(Opts{libraries = optFiles}) =
     catch
         ( do
             srcs <- mapM parseFromFile optFiles
             libs <- findAllLibs srcs optFiles
-
-            -- Create output directory and its parents (mkdir -p).
-            createDirectoryIfMissing True optDir
 
             if null libs
                 then hPutStrLn stderr "Warning: Found no documented define-library expression"

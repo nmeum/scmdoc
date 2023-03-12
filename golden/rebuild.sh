@@ -15,7 +15,7 @@ for test in *; do
 	rm -rf "${test}/expected"
 	scmdoc "${test}"/*.scm -o "${test}"/expected
 
-	for file in "${test}/expected"/*.html; do
-		prettify -o "${file}" "${file}"
-	done
+	find "${test}/expected" -name '*.html' \
+		-exec tidy --wrap 0 --indent yes \
+		--show-body-only yes -o {} {} \; 2>/dev/null
 done

@@ -7,14 +7,6 @@ abort() {
 	exit 1
 }
 
-prettify() {
-	tidy \
-		--wrap 0 \
-		--indent yes \
-		--show-body-only yes \
-		"$@" 2>/dev/null
-}
-
 if ! command -v scmdoc 1>/dev/null; then
 	abort "Error: Couldn't find 'scmdoc' in \$PATH" 1>&2
 elif ! command -v tidy 1>/dev/null; then
@@ -33,9 +25,9 @@ for test in *; do
 	printf "Running test case '%s': " "${name}"
 
 	scmdoc "${test}"/*.scm -o "${TESTDIR}"
-	for file in "${TESTDIR}"/*.html; do
-		prettify -o "${file}" "${file}"
-	done
+	find "${TESTDIR}" -name '*.html' \
+		-exec tidy --wrap 0 --indent yes \
+		--show-body-only yes -o {} {} \; 2>/dev/null
 
 	diff=$(diff -ur "${test}/expected" "${TESTDIR}")
 	if [ $? -ne 0 ]; then
@@ -44,6 +36,6 @@ for test in *; do
 		exit 1
 	fi
 
-	rm "${TESTDIR}"/*.html
+	rm -r "${TESTDIR}"/*
 	printf "OK.\n"
 done
