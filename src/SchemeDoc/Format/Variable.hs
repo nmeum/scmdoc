@@ -14,9 +14,9 @@ import SchemeDoc.Types
 
 -- | A R7RS Scheme variable definition.
 data Variable = Variable
-    { varName :: T.Text
+    { name :: T.Text
     -- ^ Identifier, i.e. variable name.
-    , varValue :: Sexp
+    , value :: Sexp
     -- ^ Value assigned to the variable name.
     }
     deriving (Eq, Show)
@@ -33,6 +33,6 @@ instance Formatable Variable where
 --
 -- > <definition> → (define <identifier> <expression>)
 mkVariable :: Sexp -> Maybe Variable
-mkVariable (List [Id "define", Id name, expr]) =
-    Just $ Variable name expr
+mkVariable (List [Id "define", Id n, expr]) =
+    Just $ Variable n expr
 mkVariable _ = Nothing
