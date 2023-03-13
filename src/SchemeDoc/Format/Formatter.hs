@@ -13,6 +13,7 @@ import Control.Monad
 
 import qualified SchemeDoc.Format.Library as L
 import SchemeDoc.Format.Procedure
+import SchemeDoc.Format.Syntax
 import SchemeDoc.Format.Types
 import SchemeDoc.Format.Variable
 import SchemeDoc.Types
@@ -49,6 +50,7 @@ defFormatter :: Sexp -> T.Text -> Maybe Declaration
 defFormatter sexp desc =
     flip fmt desc <$> mkVariable sexp
         <|> flip fmt desc <$> mkProcedure sexp
+        <|> flip fmt desc <$> mkSyntax sexp
 
 -- | Find all 'Component's recognized by the given 'Formatter'.
 -- Non-recognized S-expressions are also returned.

@@ -24,6 +24,7 @@ library
                     , SchemeDoc.Error
                     , SchemeDoc.Parser.R7RS
                     , SchemeDoc.Format.Variable
+                    , SchemeDoc.Format.Syntax
                     , SchemeDoc.Format.Formatter
                     , SchemeDoc.Format.Procedure
                     , SchemeDoc.Format.Library
