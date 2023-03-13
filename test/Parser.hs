@@ -181,6 +181,11 @@ exprParser =
                 $ parse ";;> my comment\n(define x 2)"
 
             assertEqual
+                "Documentation comment with intra-spaces"
+                (Right $ [DocComment " my\n doc\n comment\n"])
+                $ parse "\t;;> my\n\t;;> doc\n\t;;> comment\n"
+
+            assertEqual
                 "Multi-line documentation comment"
                 (Right $ [DocComment " foo\n bar\n baz\n", List [Id "define", Id "x", Number 2]])
                 $ parse ";;> foo\n;;> bar\n;;> baz\n(define x 2)"

@@ -198,8 +198,13 @@ comment =
 --
 docComment :: Parser Sexp
 docComment =
-    DocComment . T.concat
-        <$> many1 (try (P.string ";;>") >> (T.pack <$> manyTill' anyChar endOfLine))
+    -- Special case for section comments which must be followed by a
+    -- normal documentation comment and are thus one-line comments.
+    (DocComment <$> (try (P.string ";;>|") >> (T.cons '|' <$> docChars)))
+        <|> (DocComment . T.concat <$> many1 (try (intraSpaces >> P.string ";;>") >> docChars))
+  where
+    docChars :: Parser T.Text
+    docChars = T.pack <$> manyTill' anyChar endOfLine
 
 -- Sign subsequent for peculiar identifier.
 --

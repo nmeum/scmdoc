@@ -101,16 +101,19 @@ The section comment corresponds to the section title, the documentation comment 
 For example:
 
     ;;>| Multiplication Procedures
-
+    ;;>
     ;;> Procedures for performing multiplication.
 
     ;;> Multiply two signed values.
     (define (multS x y) …)
 
-This will group the procedure `multS` into the section *“Multiplication Procedures”*.
-Every section comment *must* be followed by a normal documentation comment.
+    ;;> Multiply two unsigned values.
+    (define (multU x y) …)
+
+This will group the procedure `multS` and `multU` into the section *“Multiplication Procedures”*.
+Every section comment consists of a section title (as indicated by `;;>|`) and a mandatory section description.
 Each documented Scheme library *should* contain at least one section comment.
-If the Scheme library doesn't contain any section comments then everything is grouped under an arbitrary “Declarations” section.
+If the Scheme library doesn't contain any section comments, then everything is grouped under an arbitrary “Declarations” section.
 
 ### Look and Feel
 
