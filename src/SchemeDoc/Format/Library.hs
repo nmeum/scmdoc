@@ -199,6 +199,6 @@ mkExport e = makeErr e "expected export list"
 -- Find an export expression within a library declaration.
 -- May return an empty list if no export declaration was found.
 findExport :: [Sexp] -> Either SyntaxError [ExportSpec]
-findExport (e@(List ((Id "export") : _)) : _) = mkExport e
+findExport (e@(List ((Id "export") : _)) : xs) = mkExport e >>= (\ex -> (++) ex <$> findExport xs)
 findExport (_ : exprs) = findExport exprs
 findExport [] = Right []
