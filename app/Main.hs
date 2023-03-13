@@ -20,6 +20,7 @@ data Opts = Opts
     { css :: String
     , title :: String
     , directory :: FilePath
+    , internal :: Bool
     , libraries :: [FilePath]
     }
 
@@ -38,6 +39,9 @@ parseOpts = Opts
         ( long "output"
        <> short 'o'
        <> value "." )
+    <*> switch
+        ( long "internal"
+       <> short 'i' )
     <*> some (argument str (metavar "FILE..."))
 {- FOURMOLU_ENABLE -}
 
@@ -51,7 +55,7 @@ libFileName (_, l) =
             (T.pack ".html")
 
 writeDoc :: Opts -> FilePath -> FilePath -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
+writeDoc (Opts optCss optTitle _ optInt _) inFp outFp docLib@(_, lib) = do
     -- Expand all includes relative to given Scheme file.
     (comps, failed) <- withCurrentDirectory (takeDirectory inFp) (docDecls docLib)
 
@@ -67,7 +71,7 @@ writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
                 then show $ L.ident lib
                 else optTitle
 
-    let hbody = docFmt docLib comps
+    let hbody = docFmt docLib optInt comps
     let html = mkDoc hTitle optCss hbody
     writeFile outFp $ html ++ "\n"
   where

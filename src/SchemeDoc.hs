@@ -50,10 +50,12 @@ docDecls (_, lib) = do
     pure $ findComponents defFormatter (findDocumented sexprs)
 
 -- | Format a documented 'L.Library', with regards to its 'Component's
--- (obtained via 'docDecls') as an 'Html' document.
-docFmt :: DocLib -> [Component] -> Html
-docFmt (libDesc, lib) comps =
-    let html = format lib comps
+-- (obtained via 'docDecls') as an 'Html' document. Internal (i.e.
+-- unexported identifiers) can optionally be included in the generated
+-- documentation.
+docFmt :: DocLib -> Bool -> [Component] -> Html
+docFmt (libDesc, lib) internal comps =
+    let html = format lib internal comps
      in declFmt (fmt lib libDesc) Nothing >> html
 
 -- | Render an 'Html' document with the given title, stylesheet, and body.

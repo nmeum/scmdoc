@@ -64,9 +64,11 @@ findComponents formatFn = foldl foldFunc ([], [])
             Just c -> (acc ++ [D c], unFmt)
             Nothing -> (acc, unFmt ++ [expr])
 
--- | Format all 'Component's which are exported by the given 'L.Library'.
-format :: L.Library -> [Component] -> Html
-format lib comps = do
+-- | Format all 'Component's which are provided by the given 'L.Library'.
+-- A given 'Bool' indicates whether internal (i.e. unexported) components
+-- should also be included in the generated documentation.
+format :: L.Library -> Bool -> [Component] -> Html
+format lib internal comps = do
     H.h2 "Index"
     H.details $ do
         H.summary "Table of contents"
@@ -80,12 +82,15 @@ format lib comps = do
   where
     -- Exclude any non-exported program components.
     exportedComps =
-        filter
-            ( \case
-                D c -> L.exports lib $ declId c
-                S _ -> True
-            )
-            comps
+        if internal
+            then comps
+            else
+                filter
+                    ( \case
+                        D c -> L.exports lib $ declId c
+                        S _ -> True
+                    )
+                    comps
 
     -- Extra components to prepend to the component list.
     -- Neccessary to ensure that HTML heading structure is always valid.
