@@ -5,7 +5,7 @@
 -- For example:
 --
 -- > (define x 42)
-module SchemeDoc.Format.Variable where
+module SchemeDoc.Format.Variable (Variable, mkVariable) where
 
 import qualified Data.Text as T
 import SchemeDoc.Format.Types
