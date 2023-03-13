@@ -21,6 +21,7 @@ import Control.Monad (unless)
 import Data.Char (isSpace)
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
+import SchemeDoc.Format.Util (fromMkd)
 import SchemeDoc.Types
 
 import Text.Blaze.Html
@@ -100,7 +101,7 @@ sectionFmt s@(Section n desc) = do
     H.h2 ! A.id (textValue $ compAnchor (S s)) $
         toHtml n
     unless (T.null desc) $ do
-        H.p $ toHtml desc
+        H.p $ fromMkd desc
 
 ------------------------------------------------------------------------
 
