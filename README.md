@@ -101,16 +101,19 @@ The section comment corresponds to the section title, the documentation comment 
 For example:
 
     ;;>| Multiplication Procedures
-
+    ;;>
     ;;> Procedures for performing multiplication.
 
     ;;> Multiply two signed values.
     (define (multS x y) …)
 
-This will group the procedure `multS` into the section *“Multiplication Procedures”*.
-Every section comment *must* be followed by a normal documentation comment.
+    ;;> Multiply two unsigned values.
+    (define (multU x y) …)
+
+This will group the procedure `multS` and `multU` into the section *“Multiplication Procedures”*.
+Every section comment consists of a section title (as indicated by `;;>|`) and a mandatory section description.
 Each documented Scheme library *should* contain at least one section comment.
-If the Scheme library doesn't contain any section comments then everything is grouped under an arbitrary “Declarations” section.
+If the Scheme library doesn't contain any section comments, then everything is grouped under an arbitrary “Declarations” section.
 
 ### Look and Feel
 
@@ -129,6 +132,14 @@ A loose, incomplete collection of similar work on the documentation of Scheme co
 * MOLE: [Scheme Program Source Code as a Semistructured Data][mole paper]
 * [`l2t`][l2t web] (aka. LiSP2TeX): A literate programming utility for inserting Scheme into TeX files
 * [schemeweb][schemeweb ctan]: Simple literate programming for Scheme with LaTeX
+
+## Development
+
+Please format all code with [fourmolu](https://github.com/fourmolu/fourmolu).
+For convince, a pre-commit Git hook for checking if files are properly formated is provided in `.githooks`.
+It can be activated using:
+
+    $ git config --local core.hooksPath .githooks
 
 ## License
 

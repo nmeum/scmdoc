@@ -12,6 +12,10 @@ prettify() {
 for test in *; do
 	[ -d "${test}" ] || continue
 
-	scmdoc "${test}/input.scm" -o - | prettify \
-	        > "${test}/expected.html"
+	rm -rf "${test}/expected"
+	scmdoc "${test}"/*.scm -o "${test}"/expected
+
+	find "${test}/expected" -name '*.html' \
+		-exec tidy --wrap 0 --indent yes \
+		--show-body-only yes -o {} {} \; 2>/dev/null
 done

@@ -3,21 +3,20 @@
 -- | This module implements parser combinators for the R7RS Scheme
 -- language standard. The module implements a parser for the formal
 -- syntax defined in Section 7.1 of the aformentioned standard.
-module SchemeDoc.Parser.R7RS
-    (scheme, parseFromFile)
+module SchemeDoc.Parser.R7RS (scheme, parseFromFile)
 where
 
-import SchemeDoc.Types
-import SchemeDoc.Parser.Util
-import SchemeDoc.Parser.Number
 import SchemeDoc.Error
+import SchemeDoc.Parser.Number
+import SchemeDoc.Parser.Util
+import SchemeDoc.Types
 
-import Data.Char
 import Control.Exception (throwIO)
+import Data.Char
 import qualified Data.Text as T
 
 import Text.Parsec.Char (endOfLine)
-import Text.ParserCombinators.Parsec hiding (space, spaces, string, parseFromFile)
+import Text.ParserCombinators.Parsec hiding (parseFromFile, space, spaces, string)
 import qualified Text.ParserCombinators.Parsec as P
 
 -- Intraline whitespace.
@@ -100,23 +99,24 @@ subsequent = initial <|> digit <|> specialSubsequent
 --      | <inline hex escape> | <mnemonic escape> | \|
 --
 symbolElement :: Parser Char
-symbolElement = noneOf "\\|"
-         <|> (try inlineHexEsc)
-         <|> mnemonicEsc
+symbolElement =
+    noneOf "\\|"
+        <|> try inlineHexEsc
+        <|> mnemonicEsc
 
 -- Parse a Scheme mnemonic escape character.
 --
 --  <mnemonic escape> → \a | \b | \t | \n | \r
 --
 mnemonicEsc :: Parser Char
-mnemonicEsc = char '\\' >>
-          (
-               bind "a" '\a' -- alarm
-           <|> bind "b" '\b' -- backspace
-           <|> bind "t" '\t' -- character tabulation
-           <|> bind "n" '\n' -- linefeed
-           <|> bind "r" '\r' -- return
-          )
+mnemonicEsc =
+    char '\\'
+        >> ( bind "a" '\a' -- alarm
+                <|> bind "b" '\b' -- backspace
+                <|> bind "t" '\t' -- character tabulation
+                <|> bind "n" '\n' -- linefeed
+                <|> bind "r" '\r' -- return
+           )
 
 -- Parse a character in a string, including escape sequences.
 -- Returns Nothing for escaped newlines.
@@ -128,12 +128,14 @@ mnemonicEsc = char '\\' >>
 --      | <inline hex escape>
 --
 stringElement :: Parser (Maybe Char)
-stringElement = (fmap Just $ noneOf "\"\\")
-            <|> (fmap Just $ try mnemonicEsc)
-            <|> (try $ bind "\\\"" (Just '"'))
-            <|> (try $ bind "\\\\" (Just '\\'))
-            <|> (fmap (const Nothing) $ try (char '\\' >> intraSpaces >> char '\n' >> intraSpaces))
-            <|> (fmap Just inlineHexEsc)
+stringElement =
+    Just <$> noneOf "\"\\"
+        <|> Just <$> try mnemonicEsc
+        <|> try (bind "\\\"" (Just '"'))
+        <|> try (bind "\\\\" (Just '\\'))
+        <|> (Nothing <$ try (char '\\' >> intraSpaces >> char '\n' >> intraSpaces))
+        <|> Just <$> inlineHexEsc
+
 -- TODO: Add something along the lines of `choice-try` to clean this up.
 -- See the existing `choice` and `try` combinators provided by Parsec.
 
@@ -143,15 +145,16 @@ stringElement = (fmap Just $ noneOf "\"\\")
 --      | escape | newline | null | return | space | tab
 --
 characterName :: Parser Char
-characterName = bind "alarm" '\a'
-            <|> bind "backspace" '\b'
-            <|> bind "delete" '\DEL'
-            <|> bind "escape" '\ESC'
-            <|> bind "newline" '\n'
-            <|> bind "null" '\0'
-            <|> bind "return" '\r'
-            <|> bind "space" ' '
-            <|> bind "tab" '\t'
+characterName =
+    bind "alarm" '\a'
+        <|> bind "backspace" '\b'
+        <|> bind "delete" '\DEL'
+        <|> bind "escape" '\ESC'
+        <|> bind "newline" '\n'
+        <|> bind "null" '\0'
+        <|> bind "return" '\r'
+        <|> bind "space" ' '
+        <|> bind "tab" '\t'
 
 -- Parse a Scheme delimiter.
 --
@@ -179,10 +182,12 @@ nestedComment = P.string "#|" >> manyTill anyChar (P.string "|#")
 -- This parser intentionally ignores documentation comments.
 -- See the docComment parser below.
 comment :: Parser ()
-comment = skip $
-          (char ';' >> notFollowedBy (P.string ";>") >> manyTill anyChar endOfLine)
-           <|> nestedComment
-      -- TODO: #; comments
+comment =
+    skip $
+        (char ';' >> notFollowedBy (P.string ";>") >> manyTill anyChar endOfLine)
+            <|> nestedComment
+
+-- TODO: #; comments
 
 ------------------------------------------------------------------------
 
@@ -192,8 +197,14 @@ comment = skip $
 --  <doc comment> → ;;> <all subsequent characters up to a line ending>
 --
 docComment :: Parser Sexp
-docComment = fmap (DocComment . T.concat) $
-    (many1 $ (try $ P.string ";;>") >> (T.pack <$> manyTill' anyChar endOfLine))
+docComment =
+    -- Special case for section comments which must be followed by a
+    -- normal documentation comment and are thus one-line comments.
+    (DocComment <$> (try (P.string ";;>|") >> (T.cons '|' <$> docChars)))
+        <|> (DocComment . T.concat <$> many1 (try (intraSpaces >> P.string ";;>") >> docChars))
+  where
+    docChars :: Parser T.Text
+    docChars = T.pack <$> manyTill' anyChar endOfLine
 
 -- Sign subsequent for peculiar identifier.
 --
@@ -202,8 +213,8 @@ docComment = fmap (DocComment . T.concat) $
 signSubsequent :: Parser String
 signSubsequent = do
     first <- initial
-    sign  <- explicitSign
-    ch    <- char '@'
+    sign <- explicitSign
+    ch <- char '@'
     return [first, sign, ch]
 
 -- Dot subsequent for peculiar identifier.
@@ -224,28 +235,29 @@ dotSubsequent = do
 --      | . <dot subsequent> <subsequent>*
 --
 peculiarIdentifier :: Parser String
-peculiarIdentifier = fmap (\x -> [x]) (try explicitSign)
-                 <|> try
-                  (do
-                    sign <- explicitSign
-                    ssub <- signSubsequent
-                    sub  <- many subsequent
-                    return ([sign] ++ ssub ++ sub)
-                  )
-                 <|> try
-                  (do
-                    sign <- explicitSign
-                    dsub <- dotSubsequent
-                    sub  <- many subsequent
-                    return ([sign] ++ dsub ++ sub)
-                  )
-                 <|> try
-                  (do
-                    dot  <- char '.'
-                    dsub <- dotSubsequent
-                    sub  <- many subsequent
-                    return ([dot] ++ dsub ++ sub)
-                  )
+peculiarIdentifier =
+    fmap (: []) (try explicitSign)
+        <|> try
+            ( do
+                sign <- explicitSign
+                ssub <- signSubsequent
+                sub <- many subsequent
+                return ([sign] ++ ssub ++ sub)
+            )
+        <|> try
+            ( do
+                sign <- explicitSign
+                dsub <- dotSubsequent
+                sub <- many subsequent
+                return ([sign] ++ dsub ++ sub)
+            )
+        <|> try
+            ( do
+                dot <- char '.'
+                dsub <- dotSubsequent
+                sub <- many subsequent
+                return ([dot] ++ dsub ++ sub)
+            )
 
 -- Scheme identifier or symbol.
 --
@@ -254,19 +266,22 @@ peculiarIdentifier = fmap (\x -> [x]) (try explicitSign)
 --      | <peculiar identifier>
 --
 identifier :: Parser Sexp
-identifier = fmap (Id . T.pack) $
-    (initial >>= (\i -> fmap ((:) i) $ many subsequent))
-        <|> between (char '|') (char '|') (many symbolElement)
-        <|> peculiarIdentifier
+identifier =
+    fmap (Id . T.pack) $
+        (initial >>= (\i -> (:) i <$> many subsequent))
+            <|> between (char '|') (char '|') (many symbolElement)
+            <|> peculiarIdentifier
 
 -- Scheme boolean
 --
 --  <boolean> → #t | #f | #true | #false
 --
 boolean :: Parser Sexp
-boolean = char '#' >>
-         (fmap (const $ Boolean True)  ((try $ P.string "true") <|> P.string "t")
-      <|> fmap (const $ Boolean False) ((try $ P.string "false") <|> P.string "f"))
+boolean =
+    char '#'
+        >> ( Boolean True <$ (try (P.string "true") <|> P.string "t")
+                <|> Boolean False <$ (try (P.string "false") <|> P.string "f")
+           )
 
 -- Scheme character.
 --
@@ -275,53 +290,62 @@ boolean = char '#' >>
 --      | #\x<hex scalar value>
 --
 character :: Parser Sexp
-character = fmap Char $
-            (try $ P.string "#\\" >> characterName)
-        <|> (try $ P.string "#\\x" >> fmap chr hex)
-        <|> (try $ P.string "#\\" >> anyChar)
+character =
+    fmap Char $
+        try (P.string "#\\" >> characterName)
+            <|> try (P.string "#\\x" >> fmap chr hex)
+            <|> try (P.string "#\\" >> anyChar)
 
 -- A Scheme String.
 --
 --  <string> → " <string element>* "
 --
 string :: Parser Sexp
-string = fmap (Str . T.pack) $
-    between (char '"') (char '"') (filterJust <$> many stringElement)
+string =
+    Str . T.pack
+        <$> between (char '"') (char '"') (filterJust <$> many stringElement)
 
 -- Parse a list, e.g. (1 2 3).
 list :: Parser Sexp
-list = fmap List $
-    between (lexeme $ char '(') (char ')') (many sexp)
+list =
+    List
+        <$> between (lexeme $ char '(') (char ')') (many sexp)
 
 -- Parse syntatic sugar for vectors, e.g. `#(1 2 3)`.
 vector :: Parser Sexp
-vector = fmap (\lst -> List $ Id "vector" : lst) $
-    between (lexeme $ P.string "#(") (char ')') (many sexp)
+vector =
+    (\lst -> List $ Id "vector" : lst)
+        <$> between (lexeme $ P.string "#(") (char ')') (many sexp)
 
 -- Parse syntatic sugar for bytevectors, e.g. `#u8(1 2 3)`.
 bytevector :: Parser Sexp
-bytevector = fmap (\lst -> List $ Id "bytevector" : lst) $
-    between (lexeme $ P.string "#u8(") (char ')') (many sexp)
+bytevector =
+    (\lst -> List $ Id "bytevector" : lst)
+        <$> between (lexeme $ P.string "#u8(") (char ')') (many sexp)
 
 -- -- Parse syntatic sugor for quotations, e.g. `'foo`.
 quote :: Parser Sexp
-quote = fmap (\datum -> List [(Id "quote"), datum]) $
-    (lexeme $ char '\'') >> sexp'
+quote =
+    fmap (\datum -> List [Id "quote", datum]) $
+        lexeme (char '\'') >> sexp'
 
 -- Parse syntatic sugar for quasiquotations, e.g. ``foo`.
 quasiquotation :: Parser Sexp
-quasiquotation = fmap (\e -> List [(Id "quasiquote"), e]) $
-    (lexeme $ try $ char '`') >> sexp'
+quasiquotation =
+    fmap (\e -> List [Id "quasiquote", e]) $
+        lexeme (try $ char '`') >> sexp'
 
 -- Parse syntatic sugor for unquote, e.g. `,foo`.
 unquote :: Parser Sexp
-unquote = fmap (\e -> List [(Id "unquote"), e]) $
-    (lexeme $ char ',') >> sexp'
+unquote =
+    fmap (\e -> List [Id "unquote", e]) $
+        lexeme (char ',') >> sexp'
 
 -- Parse syntatic sugar for unquote-splicing, e.g. `,@foo`.
 unquoteSplicing :: Parser Sexp
-unquoteSplicing = fmap (\e -> List [(Id "unquote-splicing"), e]) $
-    (lexeme $ P.string ",@") >> sexp'
+unquoteSplicing =
+    fmap (\e -> List [Id "unquote-splicing", e]) $
+        lexeme (P.string ",@") >> sexp'
 
 -- Parse an S-Expression without lexing or delimiter handling
 -- according to the tokens defined in the R⁷RS formal syntax:
@@ -331,7 +355,8 @@ unquoteSplicing = fmap (\e -> List [(Id "unquote-splicing"), e]) $
 --      | ( | ) | #( | #u8( | ’ | ` | , | ,@ | .
 --
 sexp' :: Parser Sexp
-sexp' = identifier
+sexp' =
+    identifier
         <|> character
         <|> number
         <|> string
@@ -347,19 +372,20 @@ sexp' = identifier
         <|> quasiquotation
         <|> try unquoteSplicing
         <|> unquote
-        -- TODO: Directive (#!fold-case, …)
+
+-- TODO: Directive (#!fold-case, …)
 
 -- Parse an s-expression with lexing and delimiter checking.
 sexp :: Parser Sexp
 sexp = lexeme $ terminatedBy sexp' (lookAhead (delim <|> eof))
-    where
-        delim :: Parser ()
-        delim = (delimiter <|> (skip $ P.string "#|") <|> eof) <?> "delimiter"
+  where
+    delim :: Parser ()
+    delim = (delimiter <|> skip (P.string "#|") <|> eof) <?> "delimiter"
 
 -- “Comments are treated exactly like whitespace.”
 -- Comments require backtracking for docComment parser.
 lexComment :: Parser ()
-lexComment = skipMany ((try comment) >> spaces)
+lexComment = skipMany (try comment >> spaces)
 
 -- Strip whitespaces and comments between tokens.
 lexeme :: Parser a -> Parser a
@@ -375,6 +401,7 @@ scheme = do
     _ <- spaces
     _ <- lexComment
     manyTill sexp eof
+
 -- TODO: Don't dupilcate lexeme here
 
 ------------------------------------------------------------------------
@@ -387,4 +414,4 @@ parseFromFile fileName = do
     r <- P.parseFromFile scheme fileName
     case r of
         Left err -> throwIO $ ErrParser err
-        Right s  -> pure s
+        Right s -> pure s
