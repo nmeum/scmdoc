@@ -200,6 +200,8 @@ docComment :: Parser Sexp
 docComment =
     -- Special case for section comments which must be followed by a
     -- normal documentation comment and are thus one-line comments.
+    --
+    -- TODO: Maybe useful to have separate constructors for these.
     (DocComment <$> (try (P.string ";;>|") >> (T.cons '|' <$> docChars)))
         <|> (DocComment . T.concat <$> many1 (try (intraSpaces >> P.string ";;>") >> docChars))
   where
