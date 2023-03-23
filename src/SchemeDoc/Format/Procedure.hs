@@ -7,7 +7,7 @@
 --
 -- > (define (my-proc x1 x2)
 -- >    (* x1 x2))
-module SchemeDoc.Format.Procedure (Procedure, mkProcedure) where
+module SchemeDoc.Format.Procedure (Procedure (..), mkProcedure) where
 
 import qualified Data.Text as T
 
