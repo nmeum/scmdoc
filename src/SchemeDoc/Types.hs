@@ -1,5 +1,6 @@
 -- | Data types for the SchemeDoc library.
-module SchemeDoc.Types where
+module SchemeDoc.Types (Documented, Sexp (..), Walk (..), walk)
+where
 
 import Data.Complex
 import qualified Data.Text as T
@@ -36,15 +37,28 @@ instance Show Sexp where
     show (Rational n) = show n
     show (DocComment c) = ";;> " ++ T.unpack c
 
+-- | Type used for the return value of the closure passed to 'walk'.
+-- The type is used to indicate whether 'walk' should recurse deeper
+-- into a 'List' S-expression.
+data Walk a = Recur a | Rise a
+
+getValue :: Walk a -> a
+getValue (Recur v) = v
+getValue (Rise v) = v
+
 -- | Traverse a Scheme source, i.e. a list of S-expressions.
 --
 -- For `List`s, the function used for traversal will first
 -- be passed the `List` expression itself and then each
--- element of the list from left to right.
-walk :: (b -> Sexp -> b) -> b -> [Sexp] -> b
+-- element of the list from left to right. If `proc` returns
+-- 'False' as a first tuple element for a list, then the `List`
+-- wont't be iterated over.
+walk :: (b -> Sexp -> Walk b) -> b -> [Sexp] -> b
 walk proc =
     foldl
         ( \a x -> case x of
-            List exprs -> walk proc (proc a x) exprs
-            expr -> proc a expr
+            List exprs -> case proc a x of
+                Recur r -> walk proc r exprs
+                Rise r -> r
+            expr -> getValue $ proc a expr
         )
