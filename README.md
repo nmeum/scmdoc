@@ -15,8 +15,7 @@ In its essence, `scmdoc` is therefore a glorified pattern matcher for S-expressi
 
 This is currently a proof-of-concept.
 The R7RS parser should support the majority of the standard but is not well tested.
-Furthermore, only a very limited subset of R7RS expressions is matched at the moment (procedure definitions, variable definitions, library declarations).
-Lastly, a preliminary HTML generation backend is available.
+A HTML generation backend is available and several R7RS expressions are formatted at the moment, including more complex ones like record type definitions.
 
 ## Installation
 
