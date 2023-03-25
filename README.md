@@ -63,6 +63,8 @@ For example, the formatter for Scheme procedure definitions roughly looks as fol
     mkProcedure _ = Nothing
 
 In the future, it should be possible to also supply custom formatters to, for example, to generate documentation for definitions defined using custom macros.
+Apart from formatters, `scmdoc` also has a WiP,concept of "expanders" which perform primitive comment-preserving macro expansion.
+This feature is presently used to expand record type definitions (`define-record-type`) to primitive procedure definitions which are then formatted using the procedure formatter.
 
 ## Usage
 
