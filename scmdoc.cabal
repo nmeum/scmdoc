@@ -27,6 +27,7 @@ library
                     , SchemeDoc.Format.Syntax
                     , SchemeDoc.Format.Formatter
                     , SchemeDoc.Format.Procedure
+                    , SchemeDoc.Format.Record
                     , SchemeDoc.Format.Library
                     , SchemeDoc.Format.Types
                     , SchemeDoc.Format.Util
@@ -55,6 +56,7 @@ executable scmdoc
         filepath             ^>=1.4.100.0,
         blaze-html           ^>=0.9.1.2,
         optparse-applicative  >=0.16.1 && <0.17,
+        lens                 ^>=5.2.2,
         text,
         scmdoc
 
@@ -65,6 +67,7 @@ test-suite scmdoc-test
     main-is:          Main.hs
     other-modules:    Parser
                     , Library
+                    , Record
                     , Formatter
                     , Util
 

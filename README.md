@@ -15,8 +15,7 @@ In its essence, `scmdoc` is therefore a glorified pattern matcher for S-expressi
 
 This is currently a proof-of-concept.
 The R7RS parser should support the majority of the standard but is not well tested.
-Furthermore, only a very limited subset of R7RS expressions is matched at the moment (procedure definitions, variable definitions, library declarations).
-Lastly, a preliminary HTML generation backend is available.
+A HTML generation backend is available and several R7RS expressions are formatted at the moment, including more complex ones like record type definitions.
 
 ## Installation
 
@@ -63,6 +62,8 @@ For example, the formatter for Scheme procedure definitions roughly looks as fol
     mkProcedure _ = Nothing
 
 In the future, it should be possible to also supply custom formatters to, for example, to generate documentation for definitions defined using custom macros.
+Apart from formatters, `scmdoc` also has a WiP,concept of "expanders" which perform primitive comment-preserving macro expansion.
+This feature is presently used to expand record type definitions (`define-record-type`) to primitive procedure definitions which are then formatted using the procedure formatter.
 
 ## Usage
 

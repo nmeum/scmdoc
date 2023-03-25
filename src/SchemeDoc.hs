@@ -14,6 +14,7 @@ where
 import SchemeDoc.Error
 import SchemeDoc.Format.Formatter
 import qualified SchemeDoc.Format.Library as L
+import qualified SchemeDoc.Format.Record as R
 import SchemeDoc.Format.Types
 import SchemeDoc.Types
 
@@ -88,18 +89,27 @@ findUndocumented lib comps =
 
 ------------------------------------------------------------------------
 
--- Filter all non-documented S-expressions.
-filterDocs :: [Sexp] -> [Sexp]
-filterDocs = snd . walk filterDocs' (False, [])
+-- Filter out all non-documented S-expressions and attempt to perform
+-- pseudo macro expansion for documented S-expression.
+filterAndExpand :: [Sexp] -> [Sexp]
+filterAndExpand = snd . walk filterAndExpand' (False, [])
   where
-    filterDocs' :: (Bool, [Sexp]) -> Sexp -> (Bool, [Sexp])
-    filterDocs' (False, acc) c@(DocComment _) = (True, acc ++ [c])
-    filterDocs' (True, acc) expr = (False, acc ++ [expr])
-    filterDocs' b _ = b
+    filterAndExpand' :: (Bool, [Sexp]) -> Sexp -> Walk (Bool, [Sexp])
+    filterAndExpand' (False, acc) c@(DocComment _) = Recur (True, acc ++ [c])
+    filterAndExpand' (True, acc) expr =
+        -- Attempt to expand the expression. If expansion was successful
+        -- strip the preceding DocComment from the accumulated value and
+        -- filter the expanded S-expressions.
+        --
+        -- TODO: Generalize this and use it for Library expansion too.
+        case R.expand expr of
+            Just e -> Rise (False, init acc ++ filterAndExpand [e])
+            Nothing -> Recur (False, acc ++ [expr])
+    filterAndExpand' b _ = Recur b
 
 -- Find all S-expressions which are preceded by a documentation comment.
 findDocumented :: [Sexp] -> [Documented]
-findDocumented = toPairLst . filterDocs
+findDocumented = toPairLst . filterAndExpand
   where
     toPairLst :: [Sexp] -> [Documented]
     toPairLst [] = []

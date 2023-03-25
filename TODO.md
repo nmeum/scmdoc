@@ -1,3 +1,8 @@
+* Make Record.hs like macro expansion more generic
+* Use SyntaxError error type in Record.hs
+* Special handling for `(define x (case-lambda …))`
+* Check for broken anchor links in generated HTML
+* Consider removing declaration description
 * Support `include-ci` in `Library.hs`
 * Add flag to include un-exported identifiers in documentation
 * Consider using `lucid2` instead of `blaze-html`
