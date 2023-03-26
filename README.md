@@ -23,8 +23,6 @@ This software is known to compile with GHC 9.4.4 and can be installed by running
 
     $ cabal install
 
-Afterwards, the binary should be available via `~/.cabal/bin/scmdoc`.
-
 ## Tests
 
 Unit tests are available and can be invoked using the following command:
