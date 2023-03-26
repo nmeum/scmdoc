@@ -9,6 +9,7 @@ import Options.Applicative
 import System.Directory
 import System.FilePath
 import System.IO
+import System.Exit (die)
 
 import SchemeDoc
 import SchemeDoc.Error
@@ -104,7 +105,7 @@ main' opts@(Opts{libraries = optFiles}) =
             libs <- findAllLibs srcs optFiles
 
             if null libs
-                then hPutStrLn stderr "Warning: Found no documented define-library expression"
+                then die "Found no documented define-library expression"
                 else writeAll opts libs
         )
         ( \case
