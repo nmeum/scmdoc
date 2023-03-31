@@ -95,6 +95,6 @@ expandFields typeName exprs = do
 -- TODO: Use SyntaxError errors.
 expand :: Sexp -> Maybe Sexp
 expand (List (Id "define-record-type" : Id typeName : xs)) = do
-    e <- expandCons xs >>= expandPred >>= expandFields typeName
+    e <- expandCons xs >>= expandPred >>= expandFields (T.toLower typeName)
     Just $ List (Id "begin" : e)
 expand _ = Nothing
