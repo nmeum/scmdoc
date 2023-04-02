@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | This module implement a 'Formatter' for Scheme procedure definitions.
@@ -44,10 +43,5 @@ instance Formatable Procedure where
 mkProcedure :: Sexp -> Maybe Procedure
 mkProcedure (List ((Id "define") : (List ((Id defid) : arglst)) : bodylst)) =
     (flip $ Procedure defid) bodylst
-        <$> mapM
-            ( \case
-                Id arg -> Just arg
-                _ -> Nothing
-            )
-            arglst
+        <$> mapM (onId id) arglst
 mkProcedure _ = Nothing

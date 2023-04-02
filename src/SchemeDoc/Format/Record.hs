@@ -8,6 +8,7 @@ module SchemeDoc.Format.Record (expand) where
 
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
+import SchemeDoc.Format.Util
 import SchemeDoc.Types
 
 -- Return a new list where the element at the given index has
@@ -34,10 +35,6 @@ objIdx n' = go n' 0
 
 mkProc :: [Sexp] -> T.Text -> Sexp
 mkProc params name = List [Id "define", List $ Id name : params, Id "_"]
-
-onId :: (T.Text -> a) -> (Sexp -> Maybe a)
-onId fn (Id i) = Just $ fn i
-onId _ _ = Nothing
 
 ------------------------------------------------------------------------
 

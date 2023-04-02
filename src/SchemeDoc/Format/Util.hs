@@ -28,3 +28,9 @@ component prefix name = do
 -- | Convert from Markdown to Html.
 fromMkd :: T.Text -> Html
 fromMkd s = preEscapedToHtml $ commonmarkToHtml [optUnsafe] [] s
+
+-- | Returns a formatter pattern match function which is only executed
+-- if the given S-expression constitutes an identifier.
+onId :: (T.Text -> a) -> (Sexp -> Maybe a)
+onId fn (Id i) = Just $ fn i
+onId _ _ = Nothing
