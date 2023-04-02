@@ -1,3 +1,4 @@
+* Make section anchor unique, use characters not allowed in identifiers
 * Make Record.hs like macro expansion more generic
 * Use SyntaxError error type in Record.hs
 * Special handling for `(define x (case-lambda …))`
