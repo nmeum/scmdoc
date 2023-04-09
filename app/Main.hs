@@ -32,18 +32,21 @@ parseOpts = Opts
     <$> option str
         ( long "stylesheet"
        <> short 's'
-       <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" )
+       <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css"
+       <> help "URL used for the stylesheet in the generated HTML" )
     <*> switch
         ( short 'I'
-       <> help "Consider unexported identifiers internal and don't warn about them" )
+       <> help "Consider unexported identifiers internal (don't warn)" )
     <*> option str
         ( long "title"
        <> short 't'
-       <> value "" )
+       <> value ""
+       <> help "Title used for the metadata of the generated HTML" )
     <*> option str
         ( long "output"
        <> short 'o'
-       <> value "." )
+       <> value "."
+       <> help "Output directory to which generated files are written" )
     <*> some (argument str (metavar "FILE..."))
 {- FOURMOLU_ENABLE -}
 
