@@ -20,6 +20,7 @@ import SchemeDoc.Types
 
 data Opts = Opts
     { css :: String
+    , noUnexport :: Bool
     , title :: String
     , directory :: FilePath
     , libraries :: [FilePath]
@@ -32,6 +33,9 @@ parseOpts = Opts
         ( long "stylesheet"
        <> short 's'
        <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" )
+    <*> switch
+        ( short 'I'
+       <> help "Consider unexported identifiers internal and don't warn about them" )
     <*> option str
         ( long "title"
        <> short 't'
@@ -60,9 +64,10 @@ writeDoc Opts{..} inFp outFp docLib@(_, lib) = do
     forM_
         failed
         (\f -> warn $ "Failed to find formatter for:\n\n\t" ++ show f ++ "\n")
-    forM_
-        (findUndocumented lib comps)
-        (\i -> warn $ "Exported but undocumented: " ++ show i)
+    unless noUnexport $
+        forM_
+            (findUndocumented lib comps)
+            (\i -> warn $ "Exported but undocumented: " ++ show i)
 
     let hTitle =
             if null title
