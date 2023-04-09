@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
@@ -52,7 +53,7 @@ libFileName (_, l) =
             (T.pack ".html")
 
 writeDoc :: Opts -> FilePath -> FilePath -> DocLib -> IO ()
-writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
+writeDoc Opts{..} inFp outFp docLib@(_, lib) = do
     -- Expand all includes relative to given Scheme file.
     (comps, failed) <- withCurrentDirectory (takeDirectory inFp) (docDecls docLib)
 
@@ -64,12 +65,12 @@ writeDoc (Opts optCss optTitle _ _) inFp outFp docLib@(_, lib) = do
         (\i -> warn $ "Exported but undocumented: " ++ show i)
 
     let hTitle =
-            if null optTitle
+            if null title
                 then show $ L.ident lib
-                else optTitle
+                else title
 
     let hbody = docFmt docLib comps
-    let html = mkDoc hTitle optCss hbody
+    let html = mkDoc hTitle css hbody
     writeFile outFp $ html ++ "\n"
   where
     warn msg = hPutStrLn stderr $ "WARNING: " ++ msg
