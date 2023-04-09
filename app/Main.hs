@@ -20,7 +20,7 @@ import SchemeDoc.Types
 
 data Opts = Opts
     { css :: String
-    , noUnexport :: Bool
+    , noWarn :: Bool
     , title :: String
     , directory :: FilePath
     , libraries :: [FilePath]
@@ -35,8 +35,9 @@ parseOpts = Opts
        <> value "https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css"
        <> help "URL used for the stylesheet in the generated HTML" )
     <*> switch
-        ( short 'I'
-       <> help "Consider unexported identifiers internal (don't warn)" )
+        ( long "no-warn"
+       <> short 'w'
+       <> help "Don't warn about unexported identifiers" )
     <*> option str
         ( long "title"
        <> short 't'
@@ -67,7 +68,7 @@ writeDoc Opts{..} inFp outFp docLib@(_, lib) = do
     forM_
         failed
         (\f -> warn $ "Failed to find formatter for:\n\n\t" ++ show f ++ "\n")
-    unless noUnexport $
+    unless noWarn $
         forM_
             (findUndocumented lib comps)
             (\i -> warn $ "Exported but undocumented: " ++ show i)
